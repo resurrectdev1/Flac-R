@@ -1,0 +1,52 @@
+name: flac_r
+description: "FOSS MP3 and FLAC metadata editor."
+publish_to: 'none'
+version: 0.4.6+3
+
+environment:
+  sdk: ">=3.11.0 <4.0.0"
+  flutter: "3.41.2"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Core
+  provider: ^6.1.2
+  shared_preferences: ^2.2.2
+  url_launcher: ^6.3.0
+
+  # Permissions
+  permission_handler: ^11.3.1
+
+  # UI & Theming
+  dynamic_color: ^1.7.0
+
+  # Audio metadata
+  audiotags: ^1.4.5
+
+  # Image picking (album art)
+  image_picker: ^1.1.2
+
+  # Folder picking (scan directories)
+  file_picker: ^8.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+# Icon Configuration
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#0D0F14"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
