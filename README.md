@@ -2,7 +2,7 @@
 <img width="200" src="https://github.com/resurrectdev1/Flac-R/blob/main/assets/app_icon.png">
 </p>
 <h1 align="center">Flac-R</h1>
-<h2 align="center">Take control of your music library.</h2>
+<h2 align="center">Perfect your collection.</h2>
 
 Whether you're organizing a massive offline archive, fixing messy metadata, or curating the perfect local playlist, **Flac-R** helps you keep your music collection pristine. Edit tags, manage embedded album art, and organize your audio files with a clean, intuitive tool that puts you in complete control of your local music library. 
 
