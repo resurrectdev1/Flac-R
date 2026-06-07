@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
@@ -22,6 +23,7 @@ class FlacRHomeScreen extends StatefulWidget {
 
 class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
   HomeTab _currentTab = HomeTab.track;
+  String _appVersion = '';
 
   static const _tabMeta = {
     HomeTab.track:   (icon: Icons.music_note_rounded, label: 'Track'),
@@ -33,31 +35,34 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final library  = context.read<AudioLibrary>();
-      final settings = context.read<FlacRSettings>();
-
-      if (!settings.onboardingDone) {
-        _showOnboarding();
-        return;
-      }
-
-      if (settings.scanRoots.isEmpty) return;
-      await library.scan(roots: settings.scanRoots.toList());
-      if (mounted && library.skippedCount > 0) {
-        final n = library.skippedCount;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-            '$n file${n == 1 ? '' : 's'} couldn\'t be read and '
-          '${n == 1 ? 'was' : 'were'} skipped — tags may be corrupt or unsupported.',
-          ),
-          backgroundColor: FlacRTheme.errorRed,
-          behavior:        SnackBarBehavior.floating,
-          duration:        const Duration(seconds: 5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ));
-      }
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) setState(() => _appVersion = info.version);
     });
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final library  = context.read<AudioLibrary>();
+        final settings = context.read<FlacRSettings>();
+
+        if (!settings.onboardingDone) {
+          _showOnboarding();
+          return;
+        }
+
+        if (settings.scanRoots.isEmpty) return;
+        await library.scan(roots: settings.scanRoots.toList());
+        if (mounted && library.skippedCount > 0) {
+          final n = library.skippedCount;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+              '$n file${n == 1 ? '' : 's'} couldn\'t be read and '
+            '${n == 1 ? 'was' : 'were'} skipped — tags may be corrupt or unsupported.',
+            ),
+            backgroundColor: FlacRTheme.errorRed,
+            behavior:        SnackBarBehavior.floating,
+            duration:        const Duration(seconds: 5),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ));
+        }
+      });
   }
 
   void _showOnboarding() {
@@ -299,7 +304,7 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
                       color:         theme.textPrimary,
                       letterSpacing: 1,
                     )),
-                    Text('v0.4.6 • Open Source',
+                    Text('v${_appVersion.isEmpty ? '...' : _appVersion} • Open Source',
                          style: TextStyle(fontSize: 12, color: theme.textSecondary)),
                   ],
                 ),
