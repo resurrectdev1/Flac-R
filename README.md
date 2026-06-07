@@ -44,7 +44,7 @@ alt="Get it on GitHub" align="center" height="80" /></a>
 alt="Get it on Obtainium" align="center" height="54" />
 </a>
 
-<a href="https://f-droid.org/en/packages/com.resurrect.flacr/">
+<a href="https://f-droid.org/en/packages/com.resurrect.flac_r/">
 <img src="https://f-droid.org/badge/get-it-on.png"
 alt="Get it on F-Droid" align="center" height="80" /></a>
 </div>
