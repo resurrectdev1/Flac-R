@@ -4,7 +4,7 @@
 <h1 align="center">Flac-R</h1>
 <h2 align="center">Perfect your collection.</h2>
 
-Whether you're organizing a massive offline archive, fixing messy metadata, or curating the perfect local playlist, **Flac-R** helps you keep your music collection pristine. Edit tags, manage embedded album art, and organize your audio files with a clean, intuitive tool that puts you in complete control of your local music library. 
+Whether you're organizing a massive offline archive, fixing messy metadata, or curating the perfect local playlist, **Flac-R** helps you keep your local music collection pristine. Edit tags, manage embedded album art, and organize your audio files with a clean, intuitive tool that puts you in complete control of your local music library. 
 
 <p align="center">
 <img width="200" src="https://github.com/resurrectdev1/Flac-R/blob/main/assets/screenshot_1.png">
@@ -17,7 +17,7 @@ Whether you're organizing a massive offline archive, fixing messy metadata, or c
 
 ### How it works?
 
-Simply open Flac-R and grant it access to your local music directory. Tap on any audio file to instantly view its current metadata. You can manually edit track names, artists, albums, genres, and track numbers, or easily update the embedded cover art. Once you are happy with the changes, just hit save, and your audio files are permanently updated right on your device storage!
+Simply open Flac-R and grant it access to your local music directory. Tap on any audio file to instantly view its current metadata. You can manually edit track names, artists, albums, genres, and track numbers, or easily update the embedded cover art. And once you are happy with the changes, just hit save, and your audio files will be permanently updated right on your device storage!
 
 ### Features
 
@@ -27,7 +27,7 @@ Simply open Flac-R and grant it access to your local music directory. Tap on any
 
 🎨 **Material You Integration:** A clean, modern theme engine that supports Android 12+ dynamic coloring, adjusting your app's palette to match your wallpaper.
 
-⚡ **Clean & Intuitive:** Designed with a minimalist, utility-first approach to make editing tags as fast and frictionless as possible.
+⚡ **Clean & Intuitive:** Designed with a minimalist, utility-first approach to make editing tags as fast and simple as possible.
 
 🔒 **Privacy Focused:** Keep your library private. Flac-R operates entirely locally on your device without scanning your files to a server.
 
