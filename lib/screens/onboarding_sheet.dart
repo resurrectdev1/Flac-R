@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
 
 class FlacROnboardingSheet extends StatefulWidget {
@@ -20,8 +21,8 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
       icon:      Icons.audiotrack_rounded,
       iconColor: FlacRTheme.accentPurple,
       title:     'Welcome to Flac-R 🎵',
-      body:      'A free, open-source tag editor for your MP3 and FLAC library. '
-    'Everything is processed locally on your decvice no cloud needed.',
+      body:      'A free, open-source tag editor for your music library. '
+    'Everything is processed locally on your decvice, no cloud needed.',
     kind:      _StepKind.intro,
     ),
     _OnboardStep(
@@ -36,8 +37,8 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
       icon:      Icons.edit_rounded,
       iconColor: FlacRTheme.accentPurple,
       title:     'Allow Tag Editing',
-      body:      'To save changes to your MP3 and FLAC files, Flac-R needs full '
-    'storage access. Android will open a system screen • tap "Allow" '
+      body:      'To save changes to your music files, Flac-R needs full '
+    'storage access. Android will open a system screen, tap "Allow" '
     'to enable tag editing. Your files are never uploaded anywhere.',
     kind:      _StepKind.manageStorage,
     ),
@@ -45,7 +46,7 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
       icon:      Icons.create_new_folder_rounded,
       iconColor: FlacRTheme.accentTeal,
       title:     'Choose Music Folders',
-      body:      'Pick the folders where your MP3 and FLAC files live. '
+      body:      'Pick the folders where your music files live. '
     'You can add or remove folders anytime from Settings.',
     kind:      _StepKind.folderPick,
     ),
@@ -76,6 +77,8 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
         );
         if (picked != null && mounted) {
           await context.read<FlacRSettings>().addScanRoot(picked);
+          final roots = context.read<FlacRSettings>().scanRoots.toList();
+          context.read<AudioLibrary>().scan(roots: roots);
         }
         if (mounted) _nextPageOrFinish();
     }
