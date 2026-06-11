@@ -40,7 +40,12 @@ class MainActivity : FlutterFragmentActivity() {
                         result.success(null)
                     }
                     "writeAllTags" -> {
-                        writeAllTagsViaJaudiotagger(path, call)
+                        val lower = path.lowercase()
+                        if (lower.endsWith(".aac")) {
+                            writeAllTagsViaMp3agic(path, call)
+                        } else {
+                            writeAllTagsViaJaudiotagger(path, call)
+                        }
                         result.success(null)
                     }
                     else -> result.notImplemented()
@@ -55,11 +60,11 @@ class MainActivity : FlutterFragmentActivity() {
     private fun readExtraTags(path: String): Map<String, String?> {
         val lower = path.lowercase()
         return when {
-            lower.endsWith(".mp3")  -> readMp3ExtraTags(path)
+            lower.endsWith(".mp3") ||
+            lower.endsWith(".aac")  -> readMp3ExtraTags(path)
             lower.endsWith(".flac") ||
             lower.endsWith(".ogg")  -> readFlacExtraTags(path)
-            lower.endsWith(".m4a") || lower.endsWith(".mp4") ||
-            lower.endsWith(".aac") -> readM4aExtraTags(path)
+            lower.endsWith(".m4a")  -> readM4aExtraTags(path)
             else                    -> mapOf("composer" to null, "comment" to null)
         }
     }
@@ -97,11 +102,11 @@ class MainActivity : FlutterFragmentActivity() {
     private fun writeExtraTags(path: String, composer: String?, comment: String?) {
         val lower = path.lowercase()
         when {
-            lower.endsWith(".mp3")  -> writeMp3ExtraTags(path, composer, comment)
+            lower.endsWith(".mp3") ||
+            lower.endsWith(".aac")  -> writeMp3ExtraTags(path, composer, comment)
             lower.endsWith(".flac") ||
             lower.endsWith(".ogg")  -> writeFlacExtraTags(path, composer, comment)
-            lower.endsWith(".m4a") || lower.endsWith(".mp4") ||
-            lower.endsWith(".aac") -> writeM4aExtraTags(path, composer, comment)
+            lower.endsWith(".m4a")  -> writeM4aExtraTags(path, composer, comment)
         }
     }
 
@@ -216,7 +221,8 @@ class MainActivity : FlutterFragmentActivity() {
         }
 
         val isOgg = path.lowercase().endsWith(".ogg")
-        if (!isOgg && args.containsKey("artworkBytes")) {
+        val isAac = path.lowercase().endsWith(".aac")
+        if (!isOgg && !isAac && args.containsKey("artworkBytes")) {
             tag.deleteArtworkField()
             @Suppress("UNCHECKED_CAST")
             val artworkBytes = args["artworkBytes"] as? List<Int>
@@ -242,6 +248,49 @@ class MainActivity : FlutterFragmentActivity() {
         tmp.writeBytes(bytes)
         tmp.deleteOnExit()
         return tmp
+    }
+
+    private fun writeAllTagsViaMp3agic(path: String, call: io.flutter.plugin.common.MethodCall) {
+        val mp3 = Mp3File(path)
+
+        if (!mp3.hasId3v2Tag()) {
+            mp3.id3v2Tag = com.mpatric.mp3agic.ID3v24Tag()
+            if (mp3.hasId3v1Tag()) {
+                mp3.id3v2Tag.title   = mp3.id3v1Tag.title
+                mp3.id3v2Tag.artist  = mp3.id3v1Tag.artist
+                mp3.id3v2Tag.album   = mp3.id3v1Tag.album
+                mp3.id3v2Tag.year    = mp3.id3v1Tag.year
+                mp3.id3v2Tag.track   = mp3.id3v1Tag.track
+                mp3.id3v2Tag.comment = mp3.id3v1Tag.comment
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val args = call.arguments as Map<String, Any?>
+
+        if (args.containsKey("title"))       mp3.id3v2Tag.title    = (args["title"]       as? String)?.ifBlank { null }
+        if (args.containsKey("artist"))      mp3.id3v2Tag.artist   = (args["artist"]      as? String)?.ifBlank { null }
+        if (args.containsKey("album"))       mp3.id3v2Tag.album    = (args["album"]       as? String)?.ifBlank { null }
+        if (args.containsKey("year"))        mp3.id3v2Tag.year     = (args["year"]        as? Int)?.takeIf { it != 0 }?.toString()
+            if (args.containsKey("genre"))       mp3.id3v2Tag.genreDescription = (args["genre"] as? String)?.ifBlank { null }
+            if (args.containsKey("trackNumber")) mp3.id3v2Tag.track    = (args["trackNumber"] as? Int)?.takeIf { it != 0 }?.toString()
+                if (args.containsKey("albumArtist")) mp3.id3v2Tag.albumArtist = (args["albumArtist"] as? String)?.ifBlank { null }
+                if (args.containsKey("composer"))    mp3.id3v2Tag.composer = (args["composer"]    as? String)?.ifBlank { null }
+                if (args.containsKey("comment"))     mp3.id3v2Tag.comment  = (args["comment"]     as? String)?.ifBlank { null }
+                if (args.containsKey("lyrics"))      mp3.id3v2Tag.lyrics   = (args["lyrics"]      as? String)?.ifBlank { null }
+
+                val tmpPath = "$path.tmp"
+                mp3.save(tmpPath)
+
+                val original = File(path)
+                val tmp      = File(tmpPath)
+                try {
+                    if (!tmp.renameTo(original)) {
+                        tmp.copyTo(original, overwrite = true)
+                    }
+                } finally {
+                    if (tmp.exists()) tmp.delete()
+                }
     }
 
     private fun readM4aExtraTags(path: String): Map<String, String?> {
