@@ -48,7 +48,9 @@ class AudioFile {
     int?        discNumber,
     bool        clearDiscNumber  = false,
     String?     composer,
+    bool        clearComposer    = false,
     String?     comment,
+    bool        clearComment     = false,
   }) {
     return AudioFile(
       path:         path,
@@ -62,8 +64,8 @@ class AudioFile {
       albumArtist:  albumArtist  ?? this.albumArtist,
       lyrics:       lyrics       ?? this.lyrics,
       discNumber:   clearDiscNumber  ? null : (discNumber  ?? this.discNumber),
-      composer:     composer     ?? this.composer,
-      comment:      comment      ?? this.comment,
+      composer:     clearComposer    ? null : (composer    ?? this.composer),
+      comment:      clearComment     ? null : (comment     ?? this.comment),
     );
   }
 }
