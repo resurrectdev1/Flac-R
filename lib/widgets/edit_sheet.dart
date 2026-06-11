@@ -108,6 +108,7 @@ class _EditSheetState extends State<EditSheet> {
   void _validateYear(String val) {
     final trimmed = val.trim();
     if (trimmed.isEmpty) { setState(() => _yearError = null); return; }
+    if (trimmed.length < 4) { setState(() => _yearError = 'Use YYYY, YYYY-MM, or YYYY-MM-DD'); return; }
     final year = int.tryParse(trimmed.substring(0, 4));
     setState(() {
       _yearError = (!_yearRe.hasMatch(trimmed) || year == null || year < 1000 || year > 2099)
@@ -252,6 +253,7 @@ class _EditSheetState extends State<EditSheet> {
         comment:      commentChanged  && commentVal.isNotEmpty  ? commentVal  : null,
         clearComment:  commentChanged  && commentVal.isEmpty,
       );
+      if (_artworkChanged) ArtworkCache.instance.invalidate(f.path);
       library.updateFile(updated);
 
       if (mounted) {
