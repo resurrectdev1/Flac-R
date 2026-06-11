@@ -7,8 +7,11 @@ class ExtraTags {
     final lower = path.toLowerCase();
     return lower.endsWith('.m4a') ||
     lower.endsWith('.mp4') ||
-    lower.endsWith('.aac');
+    lower.endsWith('.aac') ||
+    lower.endsWith('.ogg');
   }
+
+  static bool isOggFormat(String path) => path.toLowerCase().endsWith('.ogg');
 
   static Future<({String? composer, String? comment})> read(String path) async {
     final Map result = await _channel.invokeMethod('readExtraTags', {'path': path});
