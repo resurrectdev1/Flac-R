@@ -55,7 +55,14 @@ class TrackTile extends StatelessWidget {
   final bool                  isSelected;
   final ValueChanged<String>? onToggleSelect;
 
-  String get _ext => file.path.toLowerCase().endsWith('.flac') ? 'FLAC' : 'MP3';
+  String get _ext {
+    final p = file.path.toLowerCase();
+    if (p.endsWith('.flac')) return 'FLAC';
+    if (p.endsWith('.m4a'))  return 'M4A';
+    if (p.endsWith('.aac'))  return 'AAC';
+    if (p.endsWith('.mp4'))  return 'MP4';
+    return 'MP3';
+  }
 
   @override
   Widget build(BuildContext context) {
