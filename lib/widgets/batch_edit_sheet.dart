@@ -128,12 +128,32 @@ class _BatchEditSheetState extends State<BatchEditSheet> {
           ? [Picture(bytes: resolvedArtwork, mimeType: null, pictureType: PictureType.other)]
           : [],
         );
-        await AudioTags.write(file.path, tag);
-        await ExtraTags.write(
-          file.path,
-          composer: newComposer.isNotEmpty ? newComposer : file.composer,
-          comment:  newComment.isNotEmpty  ? newComment  : file.comment,
-        );
+        if (ExtraTags.isJaudiotaggerFormat(file.path)) {
+          await ExtraTags.writeAllTags(
+            file.path,
+            title:       file.title,
+            artist:      newArtist.isNotEmpty     ? newArtist      : file.artist,
+            album:       newAlbum.isNotEmpty       ? newAlbum       : file.album,
+            year:        resolvedYearInt,
+            genre:       newGenre.isNotEmpty       ? newGenre       : file.genre,
+            trackNumber: resolvedTrack,
+            discNumber:  resolvedDisc,
+            albumArtist: newAlbumArtist.isNotEmpty ? newAlbumArtist : file.albumArtist,
+            lyrics:      file.lyrics,
+            composer:    newComposer.isNotEmpty ? newComposer : file.composer,
+            comment:     newComment.isNotEmpty  ? newComment  : file.comment,
+            artworkBytes: _artworkChanged
+            ? (resolvedArtwork != null ? resolvedArtwork.toList() : [])
+            : null,
+          );
+        } else {
+          await AudioTags.write(file.path, tag);
+          await ExtraTags.write(
+            file.path,
+            composer: newComposer.isNotEmpty ? newComposer : file.composer,
+            comment:  newComment.isNotEmpty  ? newComment  : file.comment,
+          );
+        }
 
         library.updateFile(file.copyWith(
           artist:       newArtist.isNotEmpty      ? newArtist      : null,
