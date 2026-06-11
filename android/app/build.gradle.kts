@@ -78,4 +78,5 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation("com.mpatric:mp3agic:0.9.1")
+    implementation("net.jthink:jaudiotagger:3.0.1")
 }
