@@ -44,10 +44,38 @@ class AudioLibrary extends ChangeNotifier {
       _files        = result.files;
       _skippedCount = result.skipped;
       _invalidateCaches();
+      notifyListeners();
+
+      await _loadExtraTags();
     } catch (e) {
       _error = e.toString();
     } finally {
       _scanning = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadExtraTags() async {
+    bool anyChanged = false;
+    for (int i = 0; i < _files.length; i++) {
+      final f = _files[i];
+      if (f.composer != null && f.comment != null) continue;
+      try {
+        final extra = await ExtraTags.read(f.path);
+        if (extra.composer == f.composer && extra.comment == f.comment) continue;
+        _files[i] = f.copyWith(
+          composer:      extra.composer,
+          clearComposer: extra.composer == null,
+          comment:       extra.comment,
+          clearComment:  extra.comment == null,
+        );
+        anyChanged = true;
+      } catch (e) {
+        debugPrint('ExtraTags.read failed for ${f.path}: $e');
+      }
+    }
+    if (anyChanged) {
+      _invalidateCaches();
       notifyListeners();
     }
   }
@@ -74,7 +102,7 @@ class ScanResult {
 }
 
 class AudioScanner {
-  static const _supportedExts = {'.mp3', '.flac'};
+  static const _supportedExts = {'.mp3', '.flac', '.m4a', '.mp4', '.aac'};
 
   static Future<ScanResult> scan(List<String> userRoots) async {
     final results = <AudioFile>[];
@@ -97,14 +125,6 @@ class AudioScanner {
           final yearRaw     = tag?.year?.toString().trim() ?? '';
           final yearString  = yearRaw.isNotEmpty ? yearRaw : null;
 
-          String? composer;
-          String? comment;
-          try {
-            final extra = await ExtraTags.read(entity.path);
-            composer = extra.composer;
-            comment  = extra.comment;
-          } catch (_) {}
-
           results.add(AudioFile(
             path:         entity.path,
             title:        tag?.title?.isNotEmpty == true ? tag!.title! : entity.uri.pathSegments.last,
@@ -117,8 +137,6 @@ class AudioScanner {
             albumArtist:  tag?.albumArtist,
             lyrics:       tag?.lyrics,
             discNumber:   discNumber,
-            composer:     composer,
-            comment:      comment,
           ));
         } catch (_) {
           skipped++;
