@@ -129,6 +129,9 @@ class _BatchEditSheetState extends State<BatchEditSheet> {
           : [],
         );
         if (ExtraTags.isJaudiotaggerFormat(file.path)) {
+          if (ExtraTags.isOggFormat(file.path) && _artworkChanged) {
+            await AudioTags.write(file.path, tag);
+          }
           await ExtraTags.writeAllTags(
             file.path,
             title:       file.title,
@@ -142,7 +145,7 @@ class _BatchEditSheetState extends State<BatchEditSheet> {
             lyrics:      file.lyrics,
             composer:    newComposer.isNotEmpty ? newComposer : file.composer,
             comment:     newComment.isNotEmpty  ? newComment  : file.comment,
-            artworkBytes: _artworkChanged
+            artworkBytes: (!ExtraTags.isOggFormat(file.path) && _artworkChanged)
             ? (resolvedArtwork != null ? resolvedArtwork.toList() : [])
             : null,
           );
