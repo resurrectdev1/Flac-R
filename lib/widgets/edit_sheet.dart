@@ -191,13 +191,34 @@ class _EditSheetState extends State<EditSheet> {
         ? [Picture(bytes: artwork, mimeType: null, pictureType: PictureType.other)]
         : [],
       );
-      await AudioTags.write(f.path, tag);
-      await ExtraTags.write(
-        f.path,
-        composer: composerVal,
-        comment:  commentVal,
-      );
-
+      if (ExtraTags.isJaudiotaggerFormat(f.path)) {
+        await ExtraTags.writeAllTags(
+          f.path,
+          title:       _titleCtrl.text.trim(),
+          artist:      _artistCtrl.text.trim(),
+          album:       _albumCtrl.text.trim(),
+          year:        resolvedYearInt,
+          genre:       genre,
+          trackNumber: resolvedTrack,
+          discNumber:  resolvedDisc,
+          albumArtist: albumArt,
+          lyrics:      lyrics,
+          composer:    composerVal.isNotEmpty ? composerVal : (f.composer ?? ''),
+          comment:     commentVal.isNotEmpty  ? commentVal  : (f.comment  ?? ''),
+          artworkBytes: _artworkChanged
+          ? (artwork != null ? artwork.toList() : [])
+          : null,
+        );
+      } else {
+        await AudioTags.write(f.path, tag);
+        await ExtraTags.write(
+          f.path,
+          composer: composerVal,
+          comment:  commentVal,
+        );
+      }
+      final composerChanged = composerVal != (f.composer ?? '');
+      final commentChanged  = commentVal  != (f.comment  ?? '');
       final updated = f.copyWith(
         title:        _titleCtrl.text.trim(),
         artist:       _artistCtrl.text.trim(),
@@ -210,8 +231,10 @@ class _EditSheetState extends State<EditSheet> {
         albumArtist:  albumArt.isNotEmpty ? albumArt : null,
         lyrics:       lyrics.isNotEmpty   ? lyrics   : null,
         discNumber:   resolvedDisc,
-        composer:     composerVal.isNotEmpty ? composerVal : null,
-        comment:      commentVal.isNotEmpty  ? commentVal  : null,
+        composer:     composerChanged && composerVal.isNotEmpty ? composerVal : null,
+        clearComposer: composerChanged && composerVal.isEmpty,
+        comment:      commentChanged  && commentVal.isNotEmpty  ? commentVal  : null,
+        clearComment:  commentChanged  && commentVal.isEmpty,
       );
       library.updateFile(updated);
 
