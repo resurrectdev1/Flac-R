@@ -61,6 +61,19 @@ class _EditSheetState extends State<EditSheet> {
         if (mounted) setState(() => _pendingArtwork = bytes);
       });
     }
+    if (ExtraTags.isJaudiotaggerFormat(f.path)) {
+      ExtraTags.read(f.path).then((extra) {
+        if (!mounted) return;
+        setState(() {
+          if (_composerCtrl.text.isEmpty && extra.composer != null) {
+            _composerCtrl.text = extra.composer!;
+          }
+          if (_commentCtrl.text.isEmpty && extra.comment != null) {
+            _commentCtrl.text = extra.comment!;
+          }
+        });
+      });
+    }
   }
 
   @override
@@ -192,6 +205,9 @@ class _EditSheetState extends State<EditSheet> {
         : [],
       );
       if (ExtraTags.isJaudiotaggerFormat(f.path)) {
+        if (ExtraTags.isOggFormat(f.path) && _artworkChanged) {
+          await AudioTags.write(f.path, tag);
+        }
         await ExtraTags.writeAllTags(
           f.path,
           title:       _titleCtrl.text.trim(),
@@ -205,7 +221,7 @@ class _EditSheetState extends State<EditSheet> {
           lyrics:      lyrics,
           composer:    composerVal.isNotEmpty ? composerVal : (f.composer ?? ''),
           comment:     commentVal.isNotEmpty  ? commentVal  : (f.comment  ?? ''),
-          artworkBytes: _artworkChanged
+          artworkBytes: (!ExtraTags.isOggFormat(f.path) && _artworkChanged)
           ? (artwork != null ? artwork.toList() : [])
           : null,
         );
