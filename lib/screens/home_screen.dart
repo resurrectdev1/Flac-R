@@ -77,6 +77,10 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
       builder: (_) => const FlacROnboardingSheet(),
     ).then((_) {
       settingsProvider.completeOnboarding();
+      final library = context.read<AudioLibrary>();
+      if (!library.scanning && settingsProvider.scanRoots.isNotEmpty) {
+        library.scan(roots: settingsProvider.scanRoots.toList());
+      }
     });
   }
 
@@ -170,7 +174,7 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Open Settings and add the folders where your MP3 and FLAC files live.',
+              'Open Settings and add the folders where your music files live.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: theme.textSecondary, height: 1.5),
             ),
@@ -451,7 +455,7 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   liveSettings.scanRoots.isEmpty
-                                  ? 'Using defaults: Music & Downloads'
+                                  ? 'Tap on "Add Folder" to begin'
                                 : '${liveSettings.scanRoots.length} '
                                 'folder${liveSettings.scanRoots.length == 1 ? '' : 's'} selected',
                                 style: TextStyle(fontSize: 11, color: theme.textMuted),
@@ -497,6 +501,9 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
                                                onTap: () async {
                                                  await liveSettings.removeScanRoot(path);
                                                  setSheetState(() {});
+                                                 builderCtx.read<AudioLibrary>().scan(
+                                                   roots: liveSettings.scanRoots.toList(),
+                                                 );
                                                },
                                                child: Container(
                                                  width: 28, height: 28,
@@ -520,6 +527,9 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
                                     if (picked != null) {
                                       await liveSettings.addScanRoot(picked);
                                       setSheetState(() {});
+                                      builderCtx.read<AudioLibrary>().scan(
+                                        roots: liveSettings.scanRoots.toList(),
+                                      );
                                     }
                                   },
                                   child: Container(
@@ -552,6 +562,7 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
                                         await liveSettings.removeScanRoot(p);
                                       }
                                       setSheetState(() {});
+                                      builderCtx.read<AudioLibrary>().scan(roots: []);
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
