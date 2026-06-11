@@ -6,8 +6,6 @@ class ExtraTags {
   static bool isJaudiotaggerFormat(String path) {
     final lower = path.toLowerCase();
     return lower.endsWith('.m4a') ||
-    lower.endsWith('.mp4') ||
-    lower.endsWith('.aac') ||
     lower.endsWith('.ogg');
   }
 
