@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:audiotags/audiotags.dart';
 import 'audio_file.dart';
 import '../extra_tags_channel.dart';
+import '../widgets/artwork_cache.dart';
 
 class AudioLibrary extends ChangeNotifier {
   List<AudioFile> _files        = [];
@@ -38,6 +39,7 @@ class AudioLibrary extends ChangeNotifier {
     if (_scanning) return;
     _scanning = true;
     _error    = null;
+    ArtworkCache.instance.clear();
     notifyListeners();
     try {
       final result  = await compute(AudioScanner.scan, roots);
@@ -102,7 +104,7 @@ class ScanResult {
 }
 
 class AudioScanner {
-  static const _supportedExts = {'.mp3', '.flac', '.m4a', '.mp4', '.aac', '.ogg'};
+  static const _supportedExts = {'.mp3', '.flac', '.m4a', '.aac', '.ogg'};
 
   static Future<ScanResult> scan(List<String> userRoots) async {
     final results = <AudioFile>[];
