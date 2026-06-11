@@ -83,6 +83,7 @@ class TrackListViewState extends State<TrackListView> {
                             const SizedBox(height: 10),
                             Wrap(
                               spacing: 8,
+                              runSpacing: 8,
                               children: SortField.values.map((f) {
                                 final active = _sortField == f;
                                 return ChoiceChip(
