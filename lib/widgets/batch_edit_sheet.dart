@@ -61,6 +61,7 @@ class _BatchEditSheetState extends State<BatchEditSheet> {
   void _validateYear(String val) {
     final trimmed = val.trim();
     if (trimmed.isEmpty) { setState(() => _yearError = null); return; }
+    if (trimmed.length < 4) { setState(() => _yearError = 'Use YYYY, YYYY-MM, or YYYY-MM-DD'); return; }
     final year = int.tryParse(trimmed.substring(0, 4));
     setState(() {
       _yearError = (!_yearRe.hasMatch(trimmed) || year == null || year < 1000 || year > 2099)
@@ -158,6 +159,7 @@ class _BatchEditSheetState extends State<BatchEditSheet> {
           );
         }
 
+        if (_artworkChanged) ArtworkCache.instance.invalidate(file.path);
         library.updateFile(file.copyWith(
           artist:       newArtist.isNotEmpty      ? newArtist      : null,
           album:        newAlbum.isNotEmpty        ? newAlbum       : null,
