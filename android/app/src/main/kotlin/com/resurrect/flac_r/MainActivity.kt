@@ -56,7 +56,8 @@ class MainActivity : FlutterFragmentActivity() {
         val lower = path.lowercase()
         return when {
             lower.endsWith(".mp3")  -> readMp3ExtraTags(path)
-            lower.endsWith(".flac") -> readFlacExtraTags(path)
+            lower.endsWith(".flac") ||
+            lower.endsWith(".ogg")  -> readFlacExtraTags(path)
             lower.endsWith(".m4a") || lower.endsWith(".mp4") ||
             lower.endsWith(".aac") -> readM4aExtraTags(path)
             else                    -> mapOf("composer" to null, "comment" to null)
@@ -97,7 +98,8 @@ class MainActivity : FlutterFragmentActivity() {
         val lower = path.lowercase()
         when {
             lower.endsWith(".mp3")  -> writeMp3ExtraTags(path, composer, comment)
-            lower.endsWith(".flac") -> writeFlacExtraTags(path, composer, comment)
+            lower.endsWith(".flac") ||
+            lower.endsWith(".ogg")  -> writeFlacExtraTags(path, composer, comment)
             lower.endsWith(".m4a") || lower.endsWith(".mp4") ||
             lower.endsWith(".aac") -> writeM4aExtraTags(path, composer, comment)
         }
@@ -213,7 +215,8 @@ class MainActivity : FlutterFragmentActivity() {
                 else                           tag.setField(FieldKey.DISC_NO, disc.toString())
         }
 
-        if (args.containsKey("artworkBytes")) {
+        val isOgg = path.lowercase().endsWith(".ogg")
+        if (!isOgg && args.containsKey("artworkBytes")) {
             tag.deleteArtworkField()
             @Suppress("UNCHECKED_CAST")
             val artworkBytes = args["artworkBytes"] as? List<Int>
@@ -261,6 +264,7 @@ class MainActivity : FlutterFragmentActivity() {
             if (comment.isBlank()) tag.deleteField(FieldKey.COMMENT)
                 else                   tag.setField(FieldKey.COMMENT, comment)
         }
+
         try {
             audioFile.commit()
         } catch (e: Exception) {
