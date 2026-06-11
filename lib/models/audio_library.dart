@@ -102,7 +102,7 @@ class ScanResult {
 }
 
 class AudioScanner {
-  static const _supportedExts = {'.mp3', '.flac', '.m4a', '.mp4', '.aac'};
+  static const _supportedExts = {'.mp3', '.flac', '.m4a', '.mp4', '.aac', '.ogg'};
 
   static Future<ScanResult> scan(List<String> userRoots) async {
     final results = <AudioFile>[];
