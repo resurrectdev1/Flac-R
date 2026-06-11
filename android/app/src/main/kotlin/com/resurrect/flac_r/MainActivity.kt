@@ -2,11 +2,15 @@ package com.resurrect.flac_r
 
 import android.util.Log
 import com.mpatric.mp3agic.Mp3File
+import org.jaudiotagger.audio.AudioFileIO
+import org.jaudiotagger.tag.FieldKey
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.io.RandomAccessFile
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class MainActivity : FlutterFragmentActivity() {
 
@@ -17,6 +21,7 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        Logger.getLogger("org.jaudiotagger").level = Level.OFF
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
         .setMethodCallHandler { call, result ->
@@ -34,6 +39,10 @@ class MainActivity : FlutterFragmentActivity() {
                         writeExtraTags(path, composer, comment)
                         result.success(null)
                     }
+                    "writeAllTags" -> {
+                        writeAllTagsViaJaudiotagger(path, call)
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             } catch (e: Exception) {
@@ -48,6 +57,8 @@ class MainActivity : FlutterFragmentActivity() {
         return when {
             lower.endsWith(".mp3")  -> readMp3ExtraTags(path)
             lower.endsWith(".flac") -> readFlacExtraTags(path)
+            lower.endsWith(".m4a") || lower.endsWith(".mp4") ||
+            lower.endsWith(".aac") -> readM4aExtraTags(path)
             else                    -> mapOf("composer" to null, "comment" to null)
         }
     }
@@ -87,6 +98,8 @@ class MainActivity : FlutterFragmentActivity() {
         when {
             lower.endsWith(".mp3")  -> writeMp3ExtraTags(path, composer, comment)
             lower.endsWith(".flac") -> writeFlacExtraTags(path, composer, comment)
+            lower.endsWith(".m4a") || lower.endsWith(".mp4") ||
+            lower.endsWith(".aac") -> writeM4aExtraTags(path, composer, comment)
         }
     }
 
@@ -157,6 +170,102 @@ class MainActivity : FlutterFragmentActivity() {
             }
         } finally {
             if (tmpFile.exists()) tmpFile.delete()
+        }
+    }
+
+    private fun writeAllTagsViaJaudiotagger(path: String, call: io.flutter.plugin.common.MethodCall) {
+        val audioFile = AudioFileIO.read(File(path))
+        val tag       = audioFile.tagOrCreateDefault
+
+        @Suppress("UNCHECKED_CAST")
+        val args = call.arguments as Map<String, Any?>
+        val fieldMap = mapOf(
+            "title"       to FieldKey.TITLE,
+            "artist"      to FieldKey.ARTIST,
+            "album"       to FieldKey.ALBUM,
+            "genre"       to FieldKey.GENRE,
+            "albumArtist" to FieldKey.ALBUM_ARTIST,
+            "lyrics"      to FieldKey.LYRICS,
+            "composer"    to FieldKey.COMPOSER,
+            "comment"     to FieldKey.COMMENT,
+        )
+        for ((argKey, fieldKey) in fieldMap) {
+            if (args.containsKey(argKey)) {
+                val v = args[argKey] as? String
+                if (v.isNullOrBlank()) tag.deleteField(fieldKey)
+                    else                   tag.setField(fieldKey, v)
+            }
+        }
+
+        if (args.containsKey("year")) {
+            val year = args["year"] as? Int
+            if (year == null || year == 0) tag.deleteField(FieldKey.YEAR)
+                else                           tag.setField(FieldKey.YEAR, year.toString())
+        }
+        if (args.containsKey("trackNumber")) {
+            val track = args["trackNumber"] as? Int
+            if (track == null || track == 0) tag.deleteField(FieldKey.TRACK)
+                else                             tag.setField(FieldKey.TRACK, track.toString())
+        }
+        if (args.containsKey("discNumber")) {
+            val disc = args["discNumber"] as? Int
+            if (disc == null || disc == 0) tag.deleteField(FieldKey.DISC_NO)
+                else                           tag.setField(FieldKey.DISC_NO, disc.toString())
+        }
+
+        if (args.containsKey("artworkBytes")) {
+            tag.deleteArtworkField()
+            @Suppress("UNCHECKED_CAST")
+            val artworkBytes = args["artworkBytes"] as? List<Int>
+            if (!artworkBytes.isNullOrEmpty()) {
+                val bytes   = artworkBytes.map { it.toByte() }.toByteArray()
+                val artwork = org.jaudiotagger.tag.images.AndroidArtwork.createArtworkFromFile(
+                    createTempArtworkFile(bytes)
+                )
+                tag.setField(artwork)
+            }
+        }
+
+        try {
+            audioFile.commit()
+        } catch (e: Exception) {
+            Log.w(TAG, "commit() failed, falling back to AudioFileIO.write(): ${e.message}")
+            AudioFileIO.write(audioFile)
+        }
+    }
+
+    private fun createTempArtworkFile(bytes: ByteArray): File {
+        val tmp = File.createTempFile("flacr_art", ".jpg", cacheDir)
+        tmp.writeBytes(bytes)
+        tmp.deleteOnExit()
+        return tmp
+    }
+
+    private fun readM4aExtraTags(path: String): Map<String, String?> {
+        val audioFile = AudioFileIO.read(File(path))
+        val tag = audioFile.tagOrCreateDefault
+        return mapOf(
+            "composer" to tag.getFirst(FieldKey.COMPOSER).ifBlank { null },
+                     "comment"  to tag.getFirst(FieldKey.COMMENT).ifBlank  { null }
+        )
+    }
+
+    private fun writeM4aExtraTags(path: String, composer: String?, comment: String?) {
+        val audioFile = AudioFileIO.read(File(path))
+        val tag = audioFile.tagOrCreateDefault
+        if (composer != null) {
+            if (composer.isBlank()) tag.deleteField(FieldKey.COMPOSER)
+                else                    tag.setField(FieldKey.COMPOSER, composer)
+        }
+        if (comment != null) {
+            if (comment.isBlank()) tag.deleteField(FieldKey.COMMENT)
+                else                   tag.setField(FieldKey.COMMENT, comment)
+        }
+        try {
+            audioFile.commit()
+        } catch (e: Exception) {
+            Log.w(TAG, "commit() failed in writeM4aExtraTags, falling back: ${e.message}")
+            AudioFileIO.write(audioFile)
         }
     }
 
