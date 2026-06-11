@@ -22,7 +22,7 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
       iconColor: FlacRTheme.accentPurple,
       title:     'Welcome to Flac-R 🎵',
       body:      'A free, open-source tag editor for your music library. '
-    'Suppourts .mp3 .flac .m4a & .ogg',
+    'Suppourts .mp3 .flac .m4a .ogg & .aac',
     kind:      _StepKind.intro,
     ),
     _OnboardStep(
