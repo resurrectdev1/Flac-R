@@ -1,21 +1,57 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:audiotags/audiotags.dart';
 import 'audio_file.dart';
 import '../extra_tags_channel.dart';
 import '../widgets/artwork_cache.dart';
 
-class AudioLibrary extends ChangeNotifier {
-  List<AudioFile> _files        = [];
-  bool            _scanning     = false;
-  String?         _error;
-  int             _skippedCount = 0;
+class ScanProgress {
+  final int    scanned;
+  final int    total;
+  final String currentFile;
+  const ScanProgress({
+    required this.scanned,
+    required this.total,
+    required this.currentFile,
+  });
+}
 
-  List<AudioFile> get files        => List.unmodifiable(_files);
-  bool            get scanning     => _scanning;
-  String?         get error        => _error;
-  int             get skippedCount => _skippedCount;
+class _ScanRequest {
+  final List<String> roots;
+  final SendPort     progressPort;
+  const _ScanRequest(this.roots, this.progressPort);
+}
+
+void _isolateEntry(SendPort mainPort) {
+  final receivePort = ReceivePort();
+  mainPort.send(receivePort.sendPort);
+
+  receivePort.listen((message) async {
+    if (message is _ScanRequest) {
+      try {
+        final result = await AudioScanner.scan(message);
+        mainPort.send(result);
+      } catch (e) {
+        mainPort.send(e);
+      }
+    }
+  });
+}
+
+class AudioLibrary extends ChangeNotifier {
+  List<AudioFile>  _files        = [];
+  bool             _scanning     = false;
+  String?          _error;
+  int              _skippedCount = 0;
+  ScanProgress?    _progress;
+
+  List<AudioFile>  get files        => List.unmodifiable(_files);
+  bool             get scanning     => _scanning;
+  String?          get error        => _error;
+  int              get skippedCount => _skippedCount;
+  ScanProgress?    get progress     => _progress;
 
   Map<String, List<AudioFile>>? _albumCache;
   Map<String, List<AudioFile>>? _artistCache;
@@ -39,18 +75,45 @@ class AudioLibrary extends ChangeNotifier {
     if (_scanning) return;
     _scanning = true;
     _error    = null;
+    _progress = null;
     ArtworkCache.instance.clear();
     notifyListeners();
+
     try {
-      final result  = await compute(AudioScanner.scan, roots);
-      _files        = result.files;
-      _skippedCount = result.skipped;
+      final mainReceive = ReceivePort();
+      final isolate     = await Isolate.spawn(_isolateEntry, mainReceive.sendPort);
+
+      SendPort? isolateSend;
+      ScanResult? result;
+
+      await for (final msg in mainReceive) {
+        if (msg is SendPort) {
+          isolateSend = msg;
+          isolateSend.send(_ScanRequest(roots, mainReceive.sendPort));
+        } else if (msg is ScanProgress) {
+          _progress = msg;
+          notifyListeners();
+        } else if (msg is ScanResult) {
+          result = msg;
+          break;
+        } else if (msg is Exception || msg is Error) {
+          throw msg;
+        }
+      }
+
+      mainReceive.close();
+      isolate.kill(priority: Isolate.immediate);
+
+      _files        = result?.files        ?? [];
+      _skippedCount = result?.skipped      ?? 0;
+      _progress     = null;
       _invalidateCaches();
       notifyListeners();
 
       await _loadExtraTags();
     } catch (e) {
-      _error = e.toString();
+      _error    = e.toString();
+      _progress = null;
     } finally {
       _scanning = false;
       notifyListeners();
@@ -106,43 +169,60 @@ class ScanResult {
 class AudioScanner {
   static const _supportedExts = {'.mp3', '.flac', '.m4a', '.aac', '.ogg'};
 
-  static Future<ScanResult> scan(List<String> userRoots) async {
+  static Future<ScanResult> scan(_ScanRequest request) async {
+    final roots   = request.roots;
+    final port    = request.progressPort;
     final results = <AudioFile>[];
-    int skipped   = 0;
+    int   skipped = 0;
 
-    final roots = userRoots.map((p) => Directory(p)).toList();
-
-    for (final root in roots) {
+    final allFiles = <File>[];
+    for (final root in roots.map((p) => Directory(p))) {
       if (!await root.exists()) continue;
       await for (final entity in root.list(recursive: true, followLinks: false)) {
         if (entity is! File) continue;
         final lower = entity.path.toLowerCase();
         if (!_supportedExts.any((ext) => lower.endsWith(ext))) continue;
-        try {
-          final tag = await AudioTags.read(entity.path);
-          final hasArtwork = tag?.pictures != null && tag!.pictures.isNotEmpty;
+        allFiles.add(entity);
+      }
+    }
 
-          final trackNumber = tag?.trackNumber ?? await _fallbackTrackNumber(entity.path, lower);
-          final discNumber  = _parseSlashInt(tag?.discNumber?.toString()) ?? tag?.discNumber;
-          final yearRaw     = tag?.year?.toString().trim() ?? '';
-          final yearString  = yearRaw.isNotEmpty ? yearRaw : null;
+    final total = allFiles.length;
 
-          results.add(AudioFile(
-            path:         entity.path,
-            title:        tag?.title?.isNotEmpty == true ? tag!.title! : entity.uri.pathSegments.last,
-            artist:       tag?.trackArtist?.isNotEmpty == true ? tag!.trackArtist! : 'Unknown Artist',
-            album:        tag?.album?.isNotEmpty == true ? tag!.album! : 'Unknown Album',
-            genre:        tag?.genre,
-            year:         yearString,
-            trackNumber:  trackNumber,
-            hasArtwork:   hasArtwork,
-            albumArtist:  tag?.albumArtist,
-            lyrics:       tag?.lyrics,
-            discNumber:   discNumber,
-          ));
-        } catch (_) {
-          skipped++;
-        }
+    for (int i = 0; i < allFiles.length; i++) {
+      final entity   = allFiles[i];
+      final lower    = entity.path.toLowerCase();
+      final filename = entity.path.split('/').last;
+
+      port.send(ScanProgress(
+        scanned:     i + 1,
+        total:       total,
+        currentFile: filename,
+      ));
+
+      try {
+        final tag        = await AudioTags.read(entity.path);
+        final hasArtwork = tag?.pictures != null && tag!.pictures.isNotEmpty;
+
+        final trackNumber = tag?.trackNumber ?? await _fallbackTrackNumber(entity.path, lower);
+        final discNumber  = _parseSlashInt(tag?.discNumber?.toString()) ?? tag?.discNumber;
+        final yearRaw     = tag?.year?.toString().trim() ?? '';
+        final yearString  = yearRaw.isNotEmpty ? yearRaw : null;
+
+        results.add(AudioFile(
+          path:        entity.path,
+          title:       tag?.title?.isNotEmpty == true ? tag!.title! : entity.uri.pathSegments.last,
+          artist:      tag?.trackArtist?.isNotEmpty == true ? tag!.trackArtist! : 'Unknown Artist',
+          album:       tag?.album?.isNotEmpty == true ? tag!.album! : 'Unknown Album',
+          genre:       tag?.genre,
+          year:        yearString,
+          trackNumber: trackNumber,
+          hasArtwork:  hasArtwork,
+          albumArtist: tag?.albumArtist,
+          lyrics:      tag?.lyrics,
+          discNumber:  discNumber,
+        ));
+      } catch (_) {
+        skipped++;
       }
     }
 
@@ -171,9 +251,9 @@ class AudioScanner {
     ((bytes[7] & 0x7F) << 14) |
     ((bytes[8] & 0x7F) <<  7) |
     (bytes[9] & 0x7F);
-    int pos      = 10;
-    final end    = (pos + tagSize).clamp(0, bytes.length);
-    final isV24  = bytes[3] >= 4;
+    int pos     = 10;
+    final end   = (pos + tagSize).clamp(0, bytes.length);
+    final isV24 = bytes[3] >= 4;
     while (pos + 10 <= end) {
       final frameId   = String.fromCharCodes(bytes.sublist(pos, pos + 4));
       final frameSize = isV24
