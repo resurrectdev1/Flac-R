@@ -26,6 +26,16 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
     kind:      _StepKind.intro,
     ),
     _OnboardStep(
+      icon:      Icons.warning_amber_rounded,
+      iconColor: FlacRTheme.accentAmber,
+      title:     'Before You Start',
+      body:      'Flac-R is provided as-is, with no warranty of any kind. '
+    'We recommend testing on a few files before fully committing your library. '
+    'Libraries with 1000+ tracks are expected to load slowly so splitting '
+    'your library or scanning folder by folder is recommended.',
+    kind:      _StepKind.disclaimer,
+    ),
+    _OnboardStep(
       icon:      Icons.folder_open_rounded,
       iconColor: FlacRTheme.accentBlue,
       title:     'Read Your Library',
@@ -58,6 +68,9 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
 
     switch (step.kind) {
       case _StepKind.intro:
+        setState(() => _page++);
+
+      case _StepKind.disclaimer:
         setState(() => _page++);
 
       case _StepKind.readAudio:
@@ -99,6 +112,7 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
     final step      = _steps[_page];
     final isLast    = _page == _steps.length - 1;
     final isIntro   = step.kind == _StepKind.intro;
+    final isDisclaimer = step.kind == _StepKind.disclaimer;
 
     return Container(
       decoration: BoxDecoration(
@@ -191,7 +205,7 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
                     child: const Text('Back'),
                   ),
                 ),
-                const SizedBox(width: 12),
+              const SizedBox(width: 12),
               ],
               Expanded(
                 flex: _page > 0 ? 2 : 1,
@@ -211,6 +225,7 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
                   : Text(
                     isLast                              ? 'Start Editing 🎵'  :
                     isIntro                             ? 'Get Started'        :
+                    isDisclaimer                        ? 'I Understand'       :
                     step.kind == _StepKind.folderPick  ? 'Choose Folder'      :
                     'Grant Permission',
                     style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
@@ -220,7 +235,7 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
             ],
           ),
 
-          if (!isIntro) ...[
+          if (!isIntro && !isDisclaimer) ...[
             const SizedBox(height: 8),
             TextButton(
               onPressed: _requesting ? null : _nextPageOrFinish,
@@ -237,7 +252,7 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
   }
 }
 
-enum _StepKind { intro, readAudio, manageStorage, folderPick }
+enum _StepKind { intro, disclaimer, readAudio, manageStorage, folderPick }
 
 class _OnboardStep {
   final IconData  icon;
