@@ -7,6 +7,7 @@ import '../theme/flacr_theme.dart';
 import '../utils/sort_utils.dart';
 import '../widgets/batch_banner.dart';
 import '../widgets/batch_edit_sheet.dart';
+import '../widgets/scan_progress_view.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/track_tile.dart';
 
@@ -194,13 +195,7 @@ class TrackListViewState extends State<TrackListView> {
     final library = context.watch<AudioLibrary>();
 
     if (library.scanning) {
-      return Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          CircularProgressIndicator(color: theme.primary),
-          const SizedBox(height: 20),
-          Text('Scanning library…', style: TextStyle(color: theme.textSecondary, fontSize: 13)),
-        ]),
-      );
+      return ScanProgressView(theme: theme, progress: library.progress);
     }
 
     if (library.error != null) {
@@ -258,8 +253,8 @@ class TrackListViewState extends State<TrackListView> {
             const SizedBox(height: 10),
             Text(
               noFolders
-              ? 'Open Settings and add a folder\ncontaining your MP3 or FLAC files.'
-            : 'No MP3 or FLAC files were found\nin your selected folders.',
+              ? 'Open Settings and add a folder\ncontaining your music files.'
+            : 'No music files were found\nin your selected folders.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12, color: theme.textMuted, height: 1.6),
             ),
