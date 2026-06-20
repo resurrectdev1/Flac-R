@@ -23,6 +23,8 @@ Simply open Flac-R and grant it access to your local music directory. Tap on any
 
 🏷️ **Comprehensive Tagging:** Seamlessly read and modify metadata for your local audio files, ensuring your library is perfectly organized.
 
+📦 **Batch Tagging:** Edit multiple files at once even if the file formats are different.
+
 🖼️ **Album Art Management:** Easily embed, extract, or replace cover art directly within your audio tracks.
 
 🎨 **Material You Integration:** A clean, modern theme engine that supports Android 12+ dynamic coloring, adjusting your app's palette to match your wallpaper.
