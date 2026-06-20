@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../models/audio_file.dart';
 import '../theme/flacr_theme.dart';
 import '../utils/sort_utils.dart';
 import 'artwork_image.dart';
+import 'batch_edit_sheet.dart';
 
 class SheetHandle extends StatelessWidget {
   const SheetHandle({super.key, required this.theme});
@@ -79,15 +81,36 @@ class GroupTile extends StatelessWidget {
     this.artworkPath,
     this.icon,
     this.trailing,
+    this.tracks,
   });
 
-  final FlacRTheme   theme;
-  final String?      artworkPath;
-  final IconData?    icon;
-  final String       title;
-  final String       subtitle;
-  final String?      trailing;
-  final VoidCallback onTap;
+  final FlacRTheme         theme;
+  final String?            artworkPath;
+  final IconData?          icon;
+  final String             title;
+  final String             subtitle;
+  final String?            trailing;
+  final VoidCallback       onTap;
+  final List<AudioFile>?   tracks;
+
+  void _showBatchEdit(BuildContext context) {
+    final t = tracks;
+    if (t == null || t.isEmpty) return;
+    showModalBottomSheet(
+      context:            context,
+      isScrollControlled: true,
+      useSafeArea:        true,
+      backgroundColor:    Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (_) => BatchEditSheet(
+        files:  t,
+        theme:  theme,
+        onDone: () {},
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,15 +129,16 @@ class GroupTile extends StatelessWidget {
             ArtworkImage(
               path:             artworkPath ?? '',
               hasArtwork:       artworkPath != null,
-              size:             44,
+              size:             48,
               borderRadius:     10,
               placeholderColor: theme.primary.withValues(alpha: 0.12),
               placeholderChild: Icon(
                 icon ?? Icons.album_rounded,
-                color: theme.primary.withValues(alpha: 0.6), size: 22,
+                color: theme.primary.withValues(alpha: 0.6), size: 24,
               ),
             ),
             const SizedBox(width: 12),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,14 +158,47 @@ class GroupTile extends StatelessWidget {
                     maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 11, color: theme.textSecondary),
                   ),
+                  if (tracks != null && tracks!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: () => _showBatchEdit(context),
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color:        theme.primary.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: theme.primary.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.edit_rounded, size: 11, color: theme.primary),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Batch edit all',
+                              style: TextStyle(
+                                fontSize:   10,
+                                fontWeight: FontWeight.w600,
+                                color:      theme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
+
             if (trailing != null) ...[
               Text(trailing!, style: TextStyle(fontSize: 11, color: theme.textMuted)),
               const SizedBox(width: 4),
-              Icon(Icons.chevron_right_rounded, color: theme.textMuted, size: 20),
             ],
+            Icon(Icons.chevron_right_rounded, color: theme.textMuted, size: 20),
           ],
         ),
       ),
