@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
 import '../utils/sort_utils.dart';
+import '../widgets/scan_progress_view.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/track_tile.dart';
 
@@ -24,7 +25,7 @@ class FolderViewState extends State<FolderView> {
     final library = context.watch<AudioLibrary>();
 
     if (library.scanning) {
-      return Center(child: CircularProgressIndicator(color: theme.primary));
+      return ScanProgressView(theme: theme, progress: library.progress);
     }
 
     if (library.files.isEmpty) {
@@ -74,6 +75,7 @@ class FolderViewState extends State<FolderView> {
                 ? '…${dir.substring(dir.length - 46)}'
               : dir,
               trailing: '${tracks.length} file${tracks.length == 1 ? '' : 's'}',
+              tracks:   tracks,
               onTap: () => Navigator.push(ctx, MaterialPageRoute(
                 builder: (_) => DetailListPage(title: label, files: tracks),
               )),
