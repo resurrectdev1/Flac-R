@@ -5,6 +5,7 @@ import '../models/audio_file.dart';
 import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
 import '../utils/sort_utils.dart';
+import '../widgets/scan_progress_view.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/track_tile.dart';
 
@@ -40,7 +41,7 @@ class _GroupViewState extends State<GroupView> {
     final library = context.watch<AudioLibrary>();
 
     if (library.scanning) {
-      return Center(child: CircularProgressIndicator(color: theme.primary));
+      return ScanProgressView(theme: theme, progress: library.progress);
     }
 
     if (library.files.isEmpty) {
@@ -56,8 +57,6 @@ class _GroupViewState extends State<GroupView> {
     ..sort((a, b) => _order == SortOrder.asc
     ? a.toLowerCase().compareTo(b.toLowerCase())
     : b.toLowerCase().compareTo(a.toLowerCase()));
-
-    final cap = '${widget.label[0].toUpperCase()}${widget.label.substring(1)}';
 
     return Column(
       children: [
@@ -110,18 +109,19 @@ class _GroupViewState extends State<GroupView> {
             padding:     const EdgeInsets.fromLTRB(16, 8, 16, 120),
             itemCount:   keys.length,
             itemBuilder: (ctx, i) {
-              final groupName = keys[i];
-              final tracks    = groups[groupName]!;
+              final groupName  = keys[i];
+              final tracks     = groups[groupName]!;
               final coverTrack = tracks.firstWhere(
                 (t) => t.hasArtwork,
                 orElse: () => tracks.first,
               );
               return GroupTile(
-                theme:        theme,
-                artworkPath:  coverTrack.hasArtwork ? coverTrack.path : null,
-                icon:         widget.iconData,
-                title:        groupName,
-                subtitle:     '${tracks.length} track${tracks.length == 1 ? '' : 's'}',
+                theme:       theme,
+                artworkPath: coverTrack.hasArtwork ? coverTrack.path : null,
+                icon:        widget.iconData,
+                title:       groupName,
+                subtitle:    '${tracks.length} track${tracks.length == 1 ? '' : 's'}',
+                tracks:      tracks,
                 onTap: () => Navigator.push(ctx, MaterialPageRoute(
                   builder: (_) => DetailListPage(title: groupName, files: tracks),
                 )),
