@@ -5,6 +5,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 > Changes staged for the next release go here. Move them down when you cut a tag.
 ---
+
+## [0.5.0] - 2026-06-19
+
+### Added
+
+* Library scan progress with current file tracking
+* Batch editing support for Albums, Artists, and Folders
+* Quick "Batch Edit All" actions in grouped views
+* Onboarding disclaimer and large library guidance
+
+### Changed
+
+* Improved large library scanning performance
+* Improved library scanning feedback and visibility
+* Improved metadata loading performance
+* Improved composer and comment tag loading efficiency
+* Various UI polish and workflow improvements
+
+### Fixed
+
+* Various bug fixes and stability improvements
+
+---
 ## [0.4.8] - 2026-06-10
 ### Added
 - Support for .m4a, .ogg, and .aac audio formats
