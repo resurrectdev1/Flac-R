@@ -88,6 +88,7 @@ class FlacRTheme {
   }
 
   static const accentPurple = Color(0xFF7B68EE);
+  static const accentAmber  = Color(0xFFFFBF00);
   static const accentBlue   = Color(0xFF5B8DEF);
   static const accentTeal   = Color(0xFF3EC9C9);
   static const errorRed     = Color(0xFFCF6679);
