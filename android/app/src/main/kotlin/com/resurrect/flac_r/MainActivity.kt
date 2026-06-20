@@ -7,6 +7,7 @@ import org.jaudiotagger.tag.FieldKey
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.StandardMethodCodec
 import java.io.File
 import java.io.RandomAccessFile
 import java.util.logging.Level
@@ -23,8 +24,28 @@ class MainActivity : FlutterFragmentActivity() {
         super.configureFlutterEngine(flutterEngine)
         Logger.getLogger("org.jaudiotagger").level = Level.OFF
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+        val taskQueue  = messenger.makeBackgroundTaskQueue()
+
+        MethodChannel(messenger, CHANNEL, StandardMethodCodec.INSTANCE, taskQueue)
         .setMethodCallHandler { call, result ->
+            if (call.method == "readExtraTagsBatch") {
+                @Suppress("UNCHECKED_CAST")
+                val paths = call.argument<List<String>>("paths") ?: emptyList()
+                val batchResult = mutableMapOf<String, Map<String, String?>>()
+                for (p in paths) {
+                    batchResult[p] = try {
+                        readExtraTags(p)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "readExtraTagsBatch: failed for $p: ${e.message}")
+                        mapOf("composer" to null, "comment" to null)
+                    }
+                }
+                result.success(batchResult)
+                return@setMethodCallHandler
+            }
+
             val path = call.argument<String>("path")
             if (path == null) {
                 result.error("MISSING_ARG", "path is required", null)
