@@ -121,23 +121,33 @@ class AudioLibrary extends ChangeNotifier {
   }
 
   Future<void> _loadExtraTags() async {
+    final pathsNeeded = _files
+    .where((f) => f.composer == null || f.comment == null)
+    .map((f) => f.path)
+    .toList();
+    if (pathsNeeded.isEmpty) return;
+
+    Map<String, ({String? composer, String? comment})> results;
+    try {
+      results = await ExtraTags.readBatch(pathsNeeded);
+    } catch (e) {
+      debugPrint('ExtraTags.readBatch failed: $e');
+      return;
+    }
+
     bool anyChanged = false;
     for (int i = 0; i < _files.length; i++) {
-      final f = _files[i];
-      if (f.composer != null && f.comment != null) continue;
-      try {
-        final extra = await ExtraTags.read(f.path);
-        if (extra.composer == f.composer && extra.comment == f.comment) continue;
-        _files[i] = f.copyWith(
-          composer:      extra.composer,
-          clearComposer: extra.composer == null,
-          comment:       extra.comment,
-          clearComment:  extra.comment == null,
-        );
-        anyChanged = true;
-      } catch (e) {
-        debugPrint('ExtraTags.read failed for ${f.path}: $e');
-      }
+      final f     = _files[i];
+      final extra = results[f.path];
+      if (extra == null) continue;
+      if (extra.composer == f.composer && extra.comment == f.comment) continue;
+      _files[i] = f.copyWith(
+        composer:      extra.composer,
+        clearComposer: extra.composer == null,
+        comment:       extra.comment,
+        clearComment:  extra.comment == null,
+      );
+      anyChanged = true;
     }
     if (anyChanged) {
       _invalidateCaches();
@@ -188,46 +198,62 @@ class AudioScanner {
 
     final total = allFiles.length;
 
-    for (int i = 0; i < allFiles.length; i++) {
-      final entity   = allFiles[i];
-      final lower    = entity.path.toLowerCase();
-      final filename = entity.path.split('/').last;
+    const concurrency = 6;
+    int completed = 0;
 
-      port.send(ScanProgress(
-        scanned:     i + 1,
-        total:       total,
-        currentFile: filename,
-      ));
-
-      try {
-        final tag        = await AudioTags.read(entity.path);
-        final hasArtwork = tag?.pictures != null && tag!.pictures.isNotEmpty;
-
-        final trackNumber = tag?.trackNumber ?? await _fallbackTrackNumber(entity.path, lower);
-        final discNumber  = _parseSlashInt(tag?.discNumber?.toString()) ?? tag?.discNumber;
-        final yearRaw     = tag?.year?.toString().trim() ?? '';
-        final yearString  = yearRaw.isNotEmpty ? yearRaw : null;
-
-        results.add(AudioFile(
-          path:        entity.path,
-          title:       tag?.title?.isNotEmpty == true ? tag!.title! : entity.uri.pathSegments.last,
-          artist:      tag?.trackArtist?.isNotEmpty == true ? tag!.trackArtist! : 'Unknown Artist',
-          album:       tag?.album?.isNotEmpty == true ? tag!.album! : 'Unknown Album',
-          genre:       tag?.genre,
-          year:        yearString,
-          trackNumber: trackNumber,
-          hasArtwork:  hasArtwork,
-          albumArtist: tag?.albumArtist,
-          lyrics:      tag?.lyrics,
-          discNumber:  discNumber,
+    for (int start = 0; start < allFiles.length; start += concurrency) {
+      final batch = allFiles.skip(start).take(concurrency).toList();
+      final batchResults = await Future.wait(batch.map((entity) async {
+        final result = await _readOne(entity);
+        completed++;
+        port.send(ScanProgress(
+          scanned:     completed,
+          total:       total,
+          currentFile: entity.path.split('/').last,
         ));
-      } catch (_) {
-        skipped++;
+        return result;
+      }));
+
+      for (final r in batchResults) {
+        if (r != null) {
+          results.add(r);
+        } else {
+          skipped++;
+        }
       }
     }
 
     if (skipped > 0) debugPrint('AudioScanner: skipped $skipped unreadable file(s)');
     return ScanResult(files: results, skipped: skipped);
+  }
+
+  static Future<AudioFile?> _readOne(File entity) async {
+    final lower = entity.path.toLowerCase();
+    try {
+      final tag        = await AudioTags.read(entity.path);
+      final hasArtwork = tag?.pictures != null && tag!.pictures.isNotEmpty;
+
+      final trackNumber = tag?.trackNumber ?? await _fallbackTrackNumber(entity.path, lower);
+      final discNumber  = _parseSlashInt(tag?.discNumber?.toString()) ?? tag?.discNumber;
+      final yearRaw     = tag?.year?.toString().trim() ?? '';
+      final yearString  = yearRaw.isNotEmpty ? yearRaw : null;
+
+      return AudioFile(
+        path:        entity.path,
+        title:       tag?.title?.isNotEmpty == true ? tag!.title! : entity.uri.pathSegments.last,
+        artist:      tag?.trackArtist?.isNotEmpty == true ? tag!.trackArtist! : 'Unknown Artist',
+        album:       tag?.album?.isNotEmpty == true ? tag!.album! : 'Unknown Album',
+        genre:       tag?.genre,
+        year:        yearString,
+        trackNumber: trackNumber,
+        hasArtwork:  hasArtwork,
+        albumArtist: tag?.albumArtist,
+        lyrics:      tag?.lyrics,
+        discNumber:  discNumber,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   static int? _parseSlashInt(String? raw) {
@@ -236,10 +262,23 @@ class AudioScanner {
   }
 
   static Future<int?> _fallbackTrackNumber(String path, String lowerPath) async {
+    const mp3Cap  = 2 * 1024 * 1024;
+    const flacCap = 4 * 1024 * 1024;
+
     try {
-      final bytes = await File(path).readAsBytes();
-      if (lowerPath.endsWith('.mp3'))  return _id3TrackNumber(bytes);
-      if (lowerPath.endsWith('.flac')) return _vorbisTrackNumber(bytes);
+      final file    = File(path);
+      final length  = await file.length();
+      final cap     = lowerPath.endsWith('.flac') ? flacCap : mp3Cap;
+      final readLen = length < cap ? length : cap;
+
+      final raf = await file.open();
+      try {
+        final bytes = await raf.read(readLen);
+        if (lowerPath.endsWith('.mp3'))  return _id3TrackNumber(bytes);
+        if (lowerPath.endsWith('.flac')) return _vorbisTrackNumber(bytes);
+      } finally {
+        await raf.close();
+      }
     } catch (_) {}
     return null;
   }
