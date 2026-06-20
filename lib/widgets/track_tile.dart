@@ -5,35 +5,130 @@ import '../models/audio_file.dart';
 import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
 import 'edit_sheet.dart';
+import 'batch_edit_sheet.dart';
+import 'batch_banner.dart';
 import 'artwork_image.dart';
 
-class DetailListPage extends StatelessWidget {
+class DetailListPage extends StatefulWidget {
   const DetailListPage({super.key, required this.title, required this.files});
 
   final String          title;
   final List<AudioFile> files;
 
   @override
+  State<DetailListPage> createState() => _DetailListPageState();
+}
+
+class _DetailListPageState extends State<DetailListPage> {
+  bool              _selectMode = false;
+  final Set<String> _selected   = {};
+
+  void _toggleSelect(String path) {
+    setState(() {
+      if (_selected.contains(path)) {
+        _selected.remove(path);
+        if (_selected.isEmpty) _selectMode = false;
+      } else {
+        _selectMode = true;
+        _selected.add(path);
+      }
+    });
+  }
+
+  void _exitSelectMode() => setState(() { _selected.clear(); _selectMode = false; });
+
+  void _selectAll(List<AudioFile> live) =>
+  setState(() => _selected.addAll(live.map((f) => f.path)));
+
+  void _showBatchEdit(List<AudioFile> live) {
+    final theme         = context.read<FlacRSettings>().theme;
+    final selectedFiles = live.where((f) => _selected.contains(f.path)).toList();
+    if (selectedFiles.isEmpty) return;
+    showModalBottomSheet(
+      context:            context,
+      isScrollControlled: true,
+      useSafeArea:        true,
+      backgroundColor:    Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (_) => BatchEditSheet(
+        files:  selectedFiles,
+        theme:  theme,
+        onDone: _exitSelectMode,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final theme      = context.watch<FlacRSettings>().theme;
-    final library    = context.watch<AudioLibrary>();
-    final paths      = files.map((f) => f.path).toSet();
-    final liveFiles  = library.files.where((f) => paths.contains(f.path)).toList();
+    final theme     = context.watch<FlacRSettings>().theme;
+    final library   = context.watch<AudioLibrary>();
+    final paths     = widget.files.map((f) => f.path).toSet();
+    final liveFiles = library.files.where((f) => paths.contains(f.path)).toList();
 
     return Scaffold(
       backgroundColor: theme.bg,
       appBar: AppBar(
         backgroundColor: theme.surfaceHigh,
         elevation:       0,
-        title: Text(title,
-                    style: TextStyle(color: theme.textPrimary, fontSize: 16,
-                                     fontWeight: FontWeight.w600)),
-                     iconTheme: IconThemeData(color: theme.textSecondary),
+        title: Text(
+          widget.title,
+          style: TextStyle(color: theme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        iconTheme: IconThemeData(color: theme.textSecondary),
+        actions: [
+          if (!_selectMode)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                tooltip:   'Batch edit',
+                icon:      Icon(Icons.checklist_rounded, color: theme.textSecondary, size: 22),
+                onPressed: () {
+                  if (liveFiles.isEmpty) return;
+                  setState(() { _selectMode = true; });
+                },
+              ),
+            ),
+        ],
       ),
-      body: ListView.builder(
-        padding:     const EdgeInsets.fromLTRB(16, 16, 16, 40),
-        itemCount:   liveFiles.length,
-        itemBuilder: (ctx, i) => TrackTile(file: liveFiles[i], theme: theme),
+      body: Column(
+        children: [
+          if (_selectMode)
+            BatchBanner(
+              count:       _selected.length,
+              total:       liveFiles.length,
+              theme:       theme,
+              onSelectAll: () => _selectAll(liveFiles),
+              onCancel:    _exitSelectMode,
+              onBatchEdit: () => _showBatchEdit(liveFiles),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${liveFiles.length} track${liveFiles.length == 1 ? '' : 's'}',
+                  style: TextStyle(fontSize: 11, color: theme.textMuted),
+                ),
+              ),
+            ),
+
+            Expanded(
+              child: ListView.builder(
+                padding:     const EdgeInsets.fromLTRB(16, 4, 16, 40),
+                itemCount:   liveFiles.length,
+                itemBuilder: (ctx, i) => TrackTile(
+                  file:           liveFiles[i],
+                  theme:          theme,
+                  selectMode:     _selectMode,
+                  isSelected:     _selected.contains(liveFiles[i].path),
+                  onToggleSelect: _toggleSelect,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -129,21 +224,21 @@ class TrackTile extends StatelessWidget {
                          maxLines: 1, overflow: TextOverflow.ellipsis,
                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
                                           color: theme.textPrimary)),
-                                          const SizedBox(height: 2),
-                                          Text('${file.artist} — ${file.album}',
-                                               maxLines: 1, overflow: TextOverflow.ellipsis,
-                                               style: TextStyle(fontSize: 11, color: theme.textSecondary)),
-                                               if (file.year != null || file.trackNumber != null || file.genre != null) ...[
-                                                 const SizedBox(height: 2),
-                                                 Text(
-                                                   [
-                                                     if (file.trackNumber != null) '#${file.trackNumber}',
-                                                       if (file.year        != null) '${file.year}',
-                                                         if (file.genre       != null)  file.genre!,
-                                                   ].join(' · '),
-                                                   style: TextStyle(fontSize: 10, color: theme.textMuted),
-                                                 ),
-                                               ],
+                              const SizedBox(height: 2),
+                              Text('${file.artist} — ${file.album}',
+                                   maxLines: 1, overflow: TextOverflow.ellipsis,
+                                   style: TextStyle(fontSize: 11, color: theme.textSecondary)),
+                                   if (file.year != null || file.trackNumber != null || file.genre != null) ...[
+                                     const SizedBox(height: 2),
+                                     Text(
+                                       [
+                                         if (file.trackNumber != null) '#${file.trackNumber}',
+                                           if (file.year        != null) '${file.year}',
+                                             if (file.genre       != null)  file.genre!,
+                                       ].join(' · '),
+                                       style: TextStyle(fontSize: 10, color: theme.textMuted),
+                                     ),
+                                   ],
                   ],
                 ),
               ),
