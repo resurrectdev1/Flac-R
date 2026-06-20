@@ -19,6 +19,22 @@ class ExtraTags {
     );
   }
 
+  static Future<Map<String, ({String? composer, String? comment})>> readBatch(
+    List<String> paths,
+  ) async {
+    if (paths.isEmpty) return {};
+    final Map result = await _channel.invokeMethod('readExtraTagsBatch', {'paths': paths});
+    final out = <String, ({String? composer, String? comment})>{};
+    result.forEach((key, value) {
+      final m = value as Map;
+      out[key as String] = (
+        composer: m['composer'] as String?,
+        comment:  m['comment']  as String?,
+      );
+    });
+    return out;
+  }
+
   static Future<void> write(
     String path, {
       String? composer,
