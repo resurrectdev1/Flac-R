@@ -31,7 +31,7 @@ Simply open Flac-R and grant it access to your local music directory. Tap on any
 
 ⚡ **Clean & Intuitive:** Designed with a minimalist, utility-first approach to make editing tags as fast and simple as possible.
 
-🔒 **Privacy Focused:** Keep your library private. Flac-R operates entirely locally on your device without scanning your files to a server.
+🔒 **Privacy-Focused:** Keep your library private. Flac-R operates entirely locally on your device without scanning your files to a server.
 
 🌐 **Fully Offline:** Fully functional without an internet connection. No cloud, no telemetry, no tracking; your data and files stay where they belong; solely on your device.
 
