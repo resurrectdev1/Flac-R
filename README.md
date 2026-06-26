@@ -15,7 +15,7 @@ Whether you're organizing a massive offline archive, fixing messy metadata, or c
 <img width="200" src="https://github.com/resurrectdev1/Flac-R/blob/main/assets/screenshot_6.png">
 </p>
 
-### How it works?
+### How does it work?
 
 Simply open Flac-R and grant it access to your local music directory. Tap on any audio file to instantly view its current metadata. You can manually edit track names, artists, albums, genres, and track numbers, or easily update the embedded cover art. And once you are happy with the changes, just hit save, and your audio files will be permanently updated right on your device storage!
 
