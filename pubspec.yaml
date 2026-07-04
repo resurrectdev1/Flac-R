@@ -28,7 +28,7 @@ dependencies:
   audiotags: ^1.4.5
 
   # Image picking (album art)
-  image_picker: ^1.1.2
+  image_picker: ^1.2.3
 
   # Folder picking (scan directories)
   file_picker: ^8.1.2
