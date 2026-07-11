@@ -8,7 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
 import '../widgets/shared_widgets.dart';
-import 'onboarding_sheet.dart';
+import '../widgets/onboarding_sheet.dart';
 import 'track_list_view.dart';
 import '../widgets/group_view.dart';
 import 'folder_view.dart';
