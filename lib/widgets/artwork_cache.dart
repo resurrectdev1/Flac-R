@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:audiotags/audiotags.dart';
 import 'package:flutter/foundation.dart';
 
