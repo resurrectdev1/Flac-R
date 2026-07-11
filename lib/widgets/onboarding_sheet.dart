@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../models/audio_library.dart';
+import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
 
 class FlacROnboardingSheet extends StatefulWidget {
