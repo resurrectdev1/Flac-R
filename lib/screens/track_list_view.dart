@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/audio_file.dart';
 import '../models/audio_library.dart';
+import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
 import '../utils/sort_utils.dart';
 import '../widgets/batch_banner.dart';
