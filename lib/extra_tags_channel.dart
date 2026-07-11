@@ -42,8 +42,8 @@ class ExtraTags {
     }) async {
       await _channel.invokeMethod('writeExtraTags', {
         'path': path,
-        if (composer != null) 'composer': composer,
-          if (comment  != null) 'comment':  comment,
+        'composer': ?composer,
+          'comment':  ?comment,
       });
     }
 
@@ -64,18 +64,18 @@ class ExtraTags {
       }) async {
         await _channel.invokeMethod('writeAllTags', {
           'path': path,
-          if (title       != null) 'title':       title,
-            if (artist      != null) 'artist':      artist,
-              if (album       != null) 'album':       album,
-                if (year        != null) 'year':        year,
-                  if (genre       != null) 'genre':       genre,
-                    if (trackNumber != null) 'trackNumber': trackNumber,
-                      if (discNumber  != null) 'discNumber':  discNumber,
-                        if (albumArtist != null) 'albumArtist': albumArtist,
-                          if (lyrics      != null) 'lyrics':      lyrics,
-                            if (composer    != null) 'composer':    composer,
-                              if (comment     != null) 'comment':     comment,
-                                if (artworkBytes != null) 'artworkBytes': artworkBytes,
+          'title':       ?title,
+            'artist':      ?artist,
+              'album':       ?album,
+                'year':        ?year,
+                  'genre':       ?genre,
+                    'trackNumber': ?trackNumber,
+                      'discNumber':  ?discNumber,
+                        'albumArtist': ?albumArtist,
+                          'lyrics':      ?lyrics,
+                            'composer':    ?composer,
+                              'comment':     ?comment,
+                                'artworkBytes': ?artworkBytes,
         });
       }
 }
