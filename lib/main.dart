@@ -5,6 +5,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'models/audio_library.dart';
+import 'providers/flacr_settings.dart';
 import 'theme/flacr_theme.dart';
 import 'screens/home_screen.dart';
 
@@ -43,7 +44,7 @@ class FlacRApp extends StatelessWidget {
           settings.applyDynamicColorsIfChanged(lightDynamic, darkDynamic);
         }
         return Consumer<FlacRSettings>(
-          builder: (_, settings, __) {
+          builder: (_, settings, _) {
             final gt = settings.theme;
             SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
               statusBarColor:                    Colors.transparent,
