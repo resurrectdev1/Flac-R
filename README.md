@@ -37,6 +37,9 @@ Simply open Flac-R and grant it access to your local music directory. Tap on any
 
 ## Download 
 
+[![Downloads](https://img.shields.io/github/downloads/resurrectdev1/Flac-R/total)](https://github.com/resurrectdev1/Flac-R/releases)
+[![Reproducibility](https://img.shields.io/badge/Reproducible%20Build-F--Droid-blue)](https://verification.f-droid.org/packages/com.resurrect.flac_r/)
+
 <a href="https://github.com/resurrectdev1/Flac-R/releases/latest">
 <img src="https://user-images.githubusercontent.com/69304392/148696068-0cfea65d-b18f-4685-82b5-329a330b1c0d.png"
 alt="Get it on GitHub" align="center" height="80" /></a>
