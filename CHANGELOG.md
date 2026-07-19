@@ -19,14 +19,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* Banner for releases and github page
-* Analysis before build apk in actions workflow
+* Banner for releases and GitHub page
+* Analysis before build APK in actions workflow
 
 ### Changed
 
 * Codebase to be more organized via dart format
-* onboarding sheet location from screens to widgets
-* Lots of codebase cleanup and dependancy upgrades aswell as optimizations for better performance and codebase maintainability
+* Onboarding sheet location from screens to widgets
+* Lots of codebase cleanup and dependency upgrades, as well as optimizations for better performance and codebase maintainability
 
 ---
 
