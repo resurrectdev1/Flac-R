@@ -10,9 +10,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > Changes staged for the next release go here. Move them down when you cut a tag.
 
-### Fixed
-
-* Main theme colors back to older version
 ---
 
 ## [0.5.2] - 2026-07-18
