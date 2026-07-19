@@ -1,9 +1,36 @@
 # Changelog
+
 All notable changes to Flac-R are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
 ---
+
 ## [Unreleased]
+
 > Changes staged for the next release go here. Move them down when you cut a tag.
+
+### Fixed
+
+* Main theme colors back to older version
+---
+
+## [0.5.2] - 2026-07-18
+
+### Added
+
+* Banner for releases and github page
+* Analysis before build apk in actions workflow
+
+### Changed
+
+* Codebase to be more organized via dart format
+* onboarding sheet location from screens to widgets
+* Lots of codebase cleanup and dependancy upgrades aswell as optimizations for better performance and codebase maintainability
+
+### Fixed
+
+* Main theme colors back to older version
+
 ---
 
 ## [0.5.0] - 2026-06-19
@@ -28,30 +55,39 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Various bug fixes and stability improvements
 
 ---
+
 ## [0.4.8] - 2026-06-10
+
 ### Added
 - Support for .m4a, .ogg, and .aac audio formats
 - App version in the info section now reads automatically from package metadata
+
 ### Changed
 - Library now reloads automatically after onboarding, adding a folder, or removing a folder
 - In-app text made more concise throughout
+
 ### Fixed
 - Cached album art now updates correctly when the library is reloaded
 - Year tagging field now has proper input safeguards
 
 ---
+
 ## [0.4.6] - 2026-06-03
+
 ### Added
 - Initial release
 - Cache logic for faster library loading
 - Improved year tag support
+
 ### Changed
 - UI consistent with Grove's design language
+
 ### Fixed
 - Auto encoder tagging no longer applied incorrectly
 - FLAC file now cached before editing to prevent data loss
 
 ---
+
 <!--
 HOW TO MAINTAIN THIS FILE
 When you're ready to cut a new release:
