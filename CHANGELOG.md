@@ -28,10 +28,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * onboarding sheet location from screens to widgets
 * Lots of codebase cleanup and dependancy upgrades aswell as optimizations for better performance and codebase maintainability
 
-### Fixed
-
-* Main theme colors back to older version
-
 ---
 
 ## [0.5.0] - 2026-06-19
