@@ -7,7 +7,7 @@ class ArtworkCache {
 
   static const maxEntries = 60;
 
-  final _cache     = <String, Uint8List?>{};
+  final _cache = <String, Uint8List?>{};
   final _accessLog = <String>[];
 
   Future<Uint8List?> get(String path) async {
