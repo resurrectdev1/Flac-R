@@ -44,6 +44,10 @@ Simply open Flac-R and grant it access to your local music directory. Tap on any
 <img src="https://user-images.githubusercontent.com/69304392/148696068-0cfea65d-b18f-4685-82b5-329a330b1c0d.png"
 alt="Get it on GitHub" align="center" height="80" /></a>
 
+<a href="https://www.openapk.net/flac-r/com.resurrect.flac_r/">
+<img src="https://www.openapk.net/images/openapk-badge.png"
+alt="OpenAPK.net" align="center" height="80" /></a>
+
 <a href="https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/resurrectdev1/Flac-R/releases/latest">
 <img src="https://github.com/resurrectdev1/Obtainium-Badge-Fix/blob/main/assets/badge_obtainium.png"
 alt="Get it on Obtainium" align="center" height="80" /></a>
