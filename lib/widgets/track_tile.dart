@@ -174,6 +174,7 @@ class TrackTile extends StatelessWidget {
     if (p.endsWith('.m4a')) return 'M4A';
     if (p.endsWith('.aac')) return 'AAC';
     if (p.endsWith('.ogg')) return 'OGG';
+    if (p.endsWith('.opus')) return 'OPUS';
     return 'MP3';
   }
 
