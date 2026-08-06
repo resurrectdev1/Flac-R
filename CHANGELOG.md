@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > Changes staged for the next release go here. Move them down when you cut a tag.
 
+---
+
+## [0.5.4] - 2026-08-05
+
 ### Added
 
 * Opus support for single edit and multibatch
@@ -20,7 +24,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-* .acc not writing composer and comment section
+* Fixed .acc not writing composer and comment section
 
 ---
 
