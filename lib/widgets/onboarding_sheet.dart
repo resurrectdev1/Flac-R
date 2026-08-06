@@ -24,7 +24,7 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
       title: 'Welcome to Flac-R 🎵',
       body:
           'A free, open-source tag editor for your music library. '
-          'Suppourts .mp3 .flac .m4a .ogg & .aac',
+          'Suppourts .mp3 .flac .m4a .ogg .opus & .aac',
       kind: _StepKind.intro,
     ),
     _OnboardStep(
