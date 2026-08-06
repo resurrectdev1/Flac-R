@@ -194,8 +194,6 @@ class MainActivity : FlutterFragmentActivity() {
         ( v         and 0x7F).toByte(),
     )
 
-    /** Reverses ID3v2 "unsynchronisation": every 0xFF 0x00 pair had its 0x00 inserted
-     *  purely to protect legacy MPEG decoders scanning for frame sync; safe to drop. */
     private fun deunsyncId3(data: ByteArray): ByteArray {
         val out = java.io.ByteArrayOutputStream(data.size)
         var i = 0
@@ -283,9 +281,6 @@ class MainActivity : FlutterFragmentActivity() {
     }
 
     private fun canEncodeLatin1(s: String): Boolean = s.all { it.code <= 0xFF }
-
-    /** Picks the narrowest ID3 text encoding the tag version allows: Latin-1 when
-     *  possible, otherwise UTF-8 (v2.4) or UTF-16 with BOM (v2.3, which has no UTF-8). */
     private fun chooseId3Encoding(text: String, majorVersion: Int): Int {
         if (canEncodeLatin1(text)) return 0
         return if (majorVersion >= 4) 3 else 1
@@ -316,7 +311,6 @@ class MainActivity : FlutterFragmentActivity() {
         return header + data
     }
 
-    /** Read-only fallback matching mp3agic's own ID3v1-comment fallback for MP3s. */
     private fun readId3v1Comment(bytes: ByteArray): String? {
         if (bytes.size < 128) return null
         val tail = bytes.copyOfRange(bytes.size - 128, bytes.size)
@@ -736,10 +730,6 @@ class MainActivity : FlutterFragmentActivity() {
         return segs.toIntArray()
     }
 
-    /** Splits a list of lacing values into pages of at most 255 segments each
-     *  (255 segments * up to 255 bytes = the Ogg page payload ceiling). This
-     *  never needs to reason about packet boundaries - lacing values alone
-     *  fully determine packet framing regardless of where page cuts fall. */
     private fun paginateSegments(segments: List<Int>, maxPerPage: Int = 255): List<List<Int>> {
         if (segments.isEmpty()) return listOf(emptyList())
         val chunks = mutableListOf<List<Int>>()
@@ -831,9 +821,6 @@ class MainActivity : FlutterFragmentActivity() {
         return page
     }
 
-    /** Re-emits an unchanged page with a new page_sequence_number (and thus a
-     *  recomputed checksum) - used for trailing pages when the comment run's
-     *  page count changes and everything after it needs renumbering. */
     private fun rewritePageSequenceNumber(bytes: ByteArray, page: OggPage, newSeq: Int): ByteArray {
         val raw = bytes.copyOfRange(page.headerStart, page.headerStart + page.totalLen)
         raw[18] = ( newSeq         and 0xFF).toByte()
