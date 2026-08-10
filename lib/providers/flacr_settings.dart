@@ -4,25 +4,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/flacr_theme.dart';
 
 class FlacRSettings extends ChangeNotifier {
-  FlacRThemeMode _themeMode      = FlacRThemeMode.darkSlate;
-  ColorScheme?   _dynamicScheme;
-  bool           _onboardingDone = false;
-  List<String>   _scanRoots      = [];
+  FlacRThemeMode _themeMode = FlacRThemeMode.darkSlate;
+  ColorScheme? _dynamicScheme;
+  bool _onboardingDone = false;
+  List<String> _scanRoots = [];
 
-  FlacRThemeMode get themeMode      => _themeMode;
-  bool           get onboardingDone => _onboardingDone;
-  FlacRTheme     get theme          => FlacRTheme(mode: _themeMode, dynamicScheme: _dynamicScheme);
-  List<String>   get scanRoots      => List.unmodifiable(_scanRoots);
+  FlacRThemeMode get themeMode => _themeMode;
+  bool get onboardingDone => _onboardingDone;
+  FlacRTheme get theme =>
+      FlacRTheme(mode: _themeMode, dynamicScheme: _dynamicScheme);
+  List<String> get scanRoots => List.unmodifiable(_scanRoots);
 
   Future<void> init(ColorScheme? dynamicLight, ColorScheme? dynamicDark) async {
-    final prefs      = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final savedTheme = prefs.getInt('flacr_theme_mode') ?? 0;
     if (savedTheme < FlacRThemeMode.values.length) {
       _themeMode = FlacRThemeMode.values[savedTheme];
     }
     _onboardingDone = prefs.getBool('flacr_onboarding_done') ?? false;
-    _scanRoots      = prefs.getStringList('flacr_scan_roots') ?? [];
-    _dynamicScheme  = dynamicDark;
+    _scanRoots = prefs.getStringList('flacr_scan_roots') ?? [];
+    _dynamicScheme = dynamicDark;
     notifyListeners();
   }
 
@@ -49,7 +50,7 @@ class FlacRSettings extends ChangeNotifier {
   void applyDynamicColorsIfChanged(ColorScheme? light, ColorScheme? dark) {
     final next = dark ?? light;
     if (next?.primary == _dynamicScheme?.primary &&
-      next?.surface == _dynamicScheme?.surface) {
+        next?.surface == _dynamicScheme?.surface) {
       return;
     }
     _dynamicScheme = next;
