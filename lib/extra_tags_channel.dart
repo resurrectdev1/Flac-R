@@ -43,7 +43,7 @@ class ExtraTags {
       await _channel.invokeMethod('writeExtraTags', {
         'path': path,
         'composer': ?composer,
-          'comment':  ?comment,
+        'comment':  ?comment,
       });
     }
 
@@ -65,17 +65,24 @@ class ExtraTags {
         await _channel.invokeMethod('writeAllTags', {
           'path': path,
           'title':       ?title,
-            'artist':      ?artist,
-              'album':       ?album,
-                'year':        ?year,
-                  'genre':       ?genre,
-                    'trackNumber': ?trackNumber,
-                      'discNumber':  ?discNumber,
-                        'albumArtist': ?albumArtist,
-                          'lyrics':      ?lyrics,
-                            'composer':    ?composer,
-                              'comment':     ?comment,
-                                'artworkBytes': ?artworkBytes,
+          'artist':      ?artist,
+          'album':       ?album,
+          'year':        ?year,
+          'genre':       ?genre,
+          'trackNumber': ?trackNumber,
+          'discNumber':  ?discNumber,
+          'albumArtist': ?albumArtist,
+          'lyrics':      ?lyrics,
+          'composer':    ?composer,
+          'comment':     ?comment,
+          'artworkBytes': ?artworkBytes,
         });
+      }
+
+      static Future<void> scanFile(String path) => scanFiles([path]);
+
+      static Future<void> scanFiles(List<String> paths) async {
+        if (paths.isEmpty) return;
+        await _channel.invokeMethod('scanFiles', {'paths': paths});
       }
 }
