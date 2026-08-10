@@ -286,6 +286,7 @@ class _EditSheetState extends State<EditSheet> {
           comment: commentVal,
         );
       }
+      await ExtraTags.scanFile(f.path);
       final composerChanged = composerVal != (f.composer ?? '');
       final commentChanged = commentVal != (f.comment ?? '');
       final updated = f.copyWith(
