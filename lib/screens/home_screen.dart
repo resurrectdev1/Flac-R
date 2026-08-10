@@ -26,10 +26,10 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
   String _appVersion = '';
 
   static const _tabMeta = {
-    HomeTab.track:   (icon: Icons.music_note_rounded, label: 'Track'),
-    HomeTab.album:   (icon: Icons.album_rounded,      label: 'Album'),
-    HomeTab.artist:  (icon: Icons.person_rounded,     label: 'Artist'),
-    HomeTab.folders: (icon: Icons.folder_rounded,     label: 'Folders'),
+    HomeTab.track: (icon: Icons.music_note_rounded, label: 'Track'),
+    HomeTab.album: (icon: Icons.album_rounded, label: 'Album'),
+    HomeTab.artist: (icon: Icons.person_rounded, label: 'Artist'),
+    HomeTab.folders: (icon: Icons.folder_rounded, label: 'Folders'),
   };
 
   @override
@@ -38,42 +38,46 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
     PackageInfo.fromPlatform().then((info) {
       if (mounted) setState(() => _appVersion = info.version);
     });
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final library  = context.read<AudioLibrary>();
-        final settings = context.read<FlacRSettings>();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final library = context.read<AudioLibrary>();
+      final settings = context.read<FlacRSettings>();
 
-        if (!settings.onboardingDone) {
-          _showOnboarding();
-          return;
-        }
+      if (!settings.onboardingDone) {
+        _showOnboarding();
+        return;
+      }
 
-        if (settings.scanRoots.isEmpty) return;
-        await library.scan(roots: settings.scanRoots.toList());
-        if (mounted && library.skippedCount > 0) {
-          final n = library.skippedCount;
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      if (settings.scanRoots.isEmpty) return;
+      await library.scan(roots: settings.scanRoots.toList());
+      if (mounted && library.skippedCount > 0) {
+        final n = library.skippedCount;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
             content: Text(
               '$n file${n == 1 ? '' : 's'} couldn\'t be read and '
-            '${n == 1 ? 'was' : 'were'} skipped — tags may be corrupt or unsupported.',
+              '${n == 1 ? 'was' : 'were'} skipped — tags may be corrupt or unsupported.',
             ),
             backgroundColor: FlacRTheme.errorRed,
-            behavior:        SnackBarBehavior.floating,
-            duration:        const Duration(seconds: 5),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ));
-        }
-      });
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    });
   }
 
   void _showOnboarding() {
     final settingsProvider = context.read<FlacRSettings>();
     showModalBottomSheet(
-      context:            context,
-      backgroundColor:    Colors.transparent,
+      context: context,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      useSafeArea:        true,
-      isDismissible:      false,
-      enableDrag:         false,
+      useSafeArea: true,
+      isDismissible: false,
+      enableDrag: false,
       builder: (_) => const FlacROnboardingSheet(),
     ).then((_) {
       settingsProvider.completeOnboarding();
@@ -87,29 +91,33 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<FlacRSettings>();
-    final theme    = settings.theme;
+    final theme = settings.theme;
 
     return Scaffold(
-      backgroundColor:        theme.bg,
+      backgroundColor: theme.bg,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation:       0,
-        centerTitle:     true,
+        elevation: 0,
+        centerTitle: true,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: IconButton(
-            icon:      Icon(Icons.info_outline_rounded, color: theme.textSecondary, size: 20),
+            icon: Icon(
+              Icons.info_outline_rounded,
+              color: theme.textSecondary,
+              size: 20,
+            ),
             onPressed: () => _showAboutSheet(context),
-            tooltip:   'About',
+            tooltip: 'About',
           ),
         ),
         title: Text(
           'F L A C - R',
           style: TextStyle(
-            color:         theme.textSecondary,
-            fontSize:      13,
-            fontWeight:    FontWeight.w400,
+            color: theme.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
             letterSpacing: 6,
           ),
         ),
@@ -117,26 +125,29 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: IconButton(
-              icon:      Icon(Icons.settings_outlined, color: theme.textSecondary, size: 20),
+              icon: Icon(
+                Icons.settings_outlined,
+                color: theme.textSecondary,
+                size: 20,
+              ),
               onPressed: () => showFlacRSettingsSheet(context),
-              tooltip:   'Settings',
+              tooltip: 'Settings',
             ),
           ),
         ],
       ),
-      body: SafeArea(
-        bottom: false,
-        child: _buildTabBody(theme),
-      ),
+      body: SafeArea(bottom: false, child: _buildTabBody(theme)),
       bottomNavigationBar: _buildBottomNav(theme),
     );
   }
 
   Widget _buildTabBody(FlacRTheme theme) {
-    final library  = context.watch<AudioLibrary>();
+    final library = context.watch<AudioLibrary>();
     final settings = context.watch<FlacRSettings>();
 
-    if (!library.scanning && library.files.isEmpty && settings.scanRoots.isEmpty) {
+    if (!library.scanning &&
+        library.files.isEmpty &&
+        settings.scanRoots.isEmpty) {
       return _buildNoFoldersState(theme);
     }
 
@@ -160,34 +171,55 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 72, height: 72,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
-                color:        theme.primary.withValues(alpha: 0.1),
+                color: theme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(Icons.folder_open_rounded, color: theme.primary, size: 36),
+              child: Icon(
+                Icons.folder_open_rounded,
+                color: theme.primary,
+                size: 36,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
               'No music folders added',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: theme.textPrimary),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: theme.textPrimary,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Open Settings and add the folders where your music files live.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: theme.textSecondary, height: 1.5),
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.textSecondary,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.primary,
                 foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
-              icon:     const Icon(Icons.settings_outlined, size: 18),
-              label:    const Text('Open Settings', style: TextStyle(fontWeight: FontWeight.w600)),
+              icon: const Icon(Icons.settings_outlined, size: 18),
+              label: const Text(
+                'Open Settings',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               onPressed: () => showFlacRSettingsSheet(context),
             ),
           ],
@@ -200,9 +232,12 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
     final isDark = theme.brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color:  theme.surfaceHigh,
+        color: theme.surfaceHigh,
         border: Border(
-          top: BorderSide(color: theme.textMuted.withValues(alpha: 0.15), width: 0.5),
+          top: BorderSide(
+            color: theme.textMuted.withValues(alpha: 0.15),
+            width: 0.5,
+          ),
         ),
       ),
       child: SafeArea(
@@ -211,7 +246,7 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Row(
             children: HomeTab.values.map((tab) {
-              final meta     = _tabMeta[tab]!;
+              final meta = _tabMeta[tab]!;
               final isActive = _currentTab == tab;
               return Expanded(
                 child: GestureDetector(
@@ -223,31 +258,41 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
                     }
                   },
                   child: AnimatedContainer(
-                    duration:   const Duration(milliseconds: 200),
-                    curve:      Curves.easeInOut,
-                    margin:     const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                    padding:    const EdgeInsets.symmetric(vertical: 8),
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 4,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: isActive
-                      ? theme.primary.withValues(alpha: isDark ? 0.18 : 0.12)
-                      : Colors.transparent,
+                          ? theme.primary.withValues(
+                              alpha: isDark ? 0.18 : 0.12,
+                            )
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(meta.icon, size: 22,
-                             color: isActive ? theme.primary : theme.textMuted),
-                             const SizedBox(height: 3),
-                             Text(
-                               meta.label,
-                               style: TextStyle(
-                                 fontSize:      10,
-                                 fontWeight:    isActive ? FontWeight.w600 : FontWeight.w400,
-                                 color:         isActive ? theme.primary : theme.textMuted,
-                                 letterSpacing: 0.3,
-                               ),
-                             ),
+                        Icon(
+                          meta.icon,
+                          size: 22,
+                          color: isActive ? theme.primary : theme.textMuted,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          meta.label,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: isActive
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                            color: isActive ? theme.primary : theme.textMuted,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -261,28 +306,29 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
   }
 
   void _showAboutSheet(BuildContext ctx) {
-    final theme     = ctx.read<FlacRSettings>().theme;
+    final theme = ctx.read<FlacRSettings>().theme;
     final bottomPad = MediaQuery.of(ctx).padding.bottom;
 
     showModalBottomSheet(
-      context:            ctx,
-      backgroundColor:    theme.surfaceHigh,
+      context: ctx,
+      backgroundColor: theme.surfaceHigh,
       isScrollControlled: true,
-      useSafeArea:        true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (_) => Padding(
         padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomPad),
         child: Column(
-          mainAxisSize:       MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
               child: Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
-                  color:        theme.textMuted.withValues(alpha: 0.4),
+                  color: theme.textMuted.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -294,22 +340,31 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
                   borderRadius: BorderRadius.circular(12),
                   child: Image.asset(
                     'assets/images/app_icon.png',
-                    width: 52, height: 52,
-                    fit:   BoxFit.cover,
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
                   ),
                 ),
                 const SizedBox(width: 14),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Flac-R', style: TextStyle(
-                      fontSize:      24,
-                      fontWeight:    FontWeight.w800,
-                      color:         theme.textPrimary,
-                      letterSpacing: 1,
-                    )),
-                    Text('v${_appVersion.isEmpty ? '...' : _appVersion} • Open Source',
-                         style: TextStyle(fontSize: 12, color: theme.textSecondary)),
+                    Text(
+                      'Flac-R',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: theme.textPrimary,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    Text(
+                      'v${_appVersion.isEmpty ? '...' : _appVersion} • Open Source',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -317,39 +372,46 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
             const SizedBox(height: 16),
             Text(
               'Flac-R is a minimalistic tag editor designed to keep your music library clean. '
-            'It comes packed with many QOL features and is, '
-            'proudly built with love as a free, open-source tool.',
-            style: TextStyle(fontSize: 13, color: theme.textSecondary, height: 1.6),
+              'It comes packed with many QOL features and is, '
+              'proudly built with love as a free, open-source tool.',
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.textSecondary,
+                height: 1.6,
+              ),
             ),
             const SizedBox(height: 24),
-            Text('LINKS', style: TextStyle(
-              fontSize:      11,
-              fontWeight:    FontWeight.w700,
-              color:         theme.textMuted,
-              letterSpacing: 1.0,
-            )),
+            Text(
+              'LINKS',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: theme.textMuted,
+                letterSpacing: 1.0,
+              ),
+            ),
             const SizedBox(height: 12),
             _AboutLinkTile(
-              icon:      Icons.code_rounded,
+              icon: Icons.code_rounded,
               iconColor: theme.textPrimary,
-              label:     'GitHub',
-              sublabel:  'Source code & contributions',
-              url:       'https://github.com/resurrectdev1/flac-r',
-              theme:     theme,
+              label: 'GitHub',
+              sublabel: 'Source code & contributions',
+              url: 'https://github.com/resurrectdev1/flac-r',
+              theme: theme,
             ),
             const SizedBox(height: 10),
             _AboutLinkTile(
-              icon:      Icons.coffee_rounded,
+              icon: Icons.coffee_rounded,
               iconColor: const Color(0xFFFFDD57),
-              label:     'Buy Me a Coffee',
-              sublabel:  'Support development',
-              url:       'https://buymeacoffee.com/resurrect',
-              theme:     theme,
+              label: 'Buy Me a Coffee',
+              sublabel: 'Support development',
+              url: 'https://buymeacoffee.com/resurrect',
+              theme: theme,
             ),
             const SizedBox(height: 24),
             Text(
               'Made with 🎵 • all data stays on your device.',
-              style:     TextStyle(fontSize: 10, color: theme.textMuted),
+              style: TextStyle(fontSize: 10, color: theme.textMuted),
               textAlign: TextAlign.center,
             ),
           ],
@@ -357,15 +419,14 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
       ),
     );
   }
-
 }
 
 class _AboutLinkTile extends StatelessWidget {
-  final IconData   icon;
-  final Color      iconColor;
-  final String     label;
-  final String     sublabel;
-  final String     url;
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String sublabel;
+  final String url;
   final FlacRTheme theme;
 
   const _AboutLinkTile({
@@ -391,16 +452,17 @@ class _AboutLinkTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color:        theme.surface,
+          color: theme.surface,
           borderRadius: BorderRadius.circular(14),
-          border:       Border.all(color: theme.textMuted.withValues(alpha: 0.2)),
+          border: Border.all(color: theme.textMuted.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
             Container(
-              width: 38, height: 38,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                color:        iconColor.withValues(alpha: 0.12),
+                color: iconColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: iconColor, size: 20),
@@ -410,9 +472,18 @@ class _AboutLinkTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600, color: theme.textPrimary)),
-                    Text(sublabel, style: TextStyle(fontSize: 11, color: theme.textSecondary)),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: theme.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    sublabel,
+                    style: TextStyle(fontSize: 11, color: theme.textSecondary),
+                  ),
                 ],
               ),
             ),
