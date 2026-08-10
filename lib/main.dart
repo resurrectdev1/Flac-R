@@ -46,17 +46,24 @@ class FlacRApp extends StatelessWidget {
         return Consumer<FlacRSettings>(
           builder: (_, settings, _) {
             final gt = settings.theme;
-            SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-              statusBarColor:                    Colors.transparent,
-              statusBarIconBrightness:           gt.brightness == Brightness.light ? Brightness.dark : Brightness.light,
-              systemNavigationBarColor:          gt.bg,
-              systemNavigationBarIconBrightness: gt.brightness == Brightness.light ? Brightness.dark : Brightness.light,
-            ));
+            SystemChrome.setSystemUIOverlayStyle(
+              SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: gt.brightness == Brightness.light
+                    ? Brightness.dark
+                    : Brightness.light,
+                systemNavigationBarColor: gt.bg,
+                systemNavigationBarIconBrightness:
+                    gt.brightness == Brightness.light
+                    ? Brightness.dark
+                    : Brightness.light,
+              ),
+            );
             return MaterialApp(
-              title:                      'Flac-R',
+              title: 'Flac-R',
               debugShowCheckedModeBanner: false,
-              theme:                      _buildTheme(gt),
-              home:                       const FlacRHomeScreen(),
+              theme: _buildTheme(gt),
+              home: const FlacRHomeScreen(),
             );
           },
         );
@@ -65,21 +72,22 @@ class FlacRApp extends StatelessWidget {
   }
 
   ThemeData _buildTheme(FlacRTheme gt) {
-    final cs = ColorScheme.fromSeed(
-      seedColor:  gt.primary,
-      brightness: gt.brightness,
-    ).copyWith(
-      surface:                 gt.surface,
-      surfaceContainerHighest: gt.surfaceHigh,
-      primary:                 gt.primary,
-      error:                   FlacRTheme.errorRed,
-      onSurface:               gt.textPrimary,
-      onPrimary:               Colors.white,
-    );
+    final cs =
+        ColorScheme.fromSeed(
+          seedColor: gt.primary,
+          brightness: gt.brightness,
+        ).copyWith(
+          surface: gt.surface,
+          surfaceContainerHighest: gt.surfaceHigh,
+          primary: gt.primary,
+          error: FlacRTheme.errorRed,
+          onSurface: gt.textPrimary,
+          onPrimary: Colors.white,
+        );
     return ThemeData(
-      useMaterial3:            true,
-      brightness:              gt.brightness,
-      colorScheme:             cs,
+      useMaterial3: true,
+      brightness: gt.brightness,
+      colorScheme: cs,
       scaffoldBackgroundColor: gt.bg,
       dialogTheme: DialogThemeData(
         backgroundColor: gt.surfaceHigh,
@@ -88,13 +96,22 @@ class FlacRApp extends StatelessWidget {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        filled:        true,
-        fillColor:     gt.surface,
-        border:        OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: gt.textMuted)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: gt.textMuted)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: gt.primary, width: 1.5)),
-        labelStyle:    TextStyle(color: gt.textSecondary),
-        hintStyle:     TextStyle(color: gt.textMuted),
+        filled: true,
+        fillColor: gt.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: gt.textMuted),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: gt.textMuted),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: gt.primary, width: 1.5),
+        ),
+        labelStyle: TextStyle(color: gt.textSecondary),
+        hintStyle: TextStyle(color: gt.textMuted),
       ),
     );
   }
