@@ -204,6 +204,7 @@ class _BatchEditSheetState extends State<BatchEditSheet> {
             comment: newComment.isNotEmpty ? newComment : file.comment,
           );
         }
+        await ExtraTags.scanFile(file.path);
 
         if (_artworkChanged) ArtworkCache.instance.invalidate(file.path);
         library.updateFile(
