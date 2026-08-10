@@ -85,15 +85,7 @@ class MainActivity : FlutterFragmentActivity() {
             }
         }
     }
-
-    /**
-     * Forces Android's MediaStore to re-index the given files immediately after
-     * we've rewritten their tags/artwork on disk. Without this, MediaStore keeps
-     * serving stale cached metadata/thumbnails to players that read from it
-     * (Fossify, PixelPlayer, Retro Music, etc.) until the OS gets around to its
-     * own scan — which is what was behind #24. Poweramp appears unaffected
-     * because it re-reads files directly rather than trusting MediaStore's cache.
-     */
+    
     private fun scanFiles(paths: List<String>) {
         if (paths.isEmpty()) return
             try {
@@ -750,8 +742,7 @@ class MainActivity : FlutterFragmentActivity() {
                                                                    segmentTable = segmentTable,
                                                     )
                                 }
-
-                                /** Rebuilds lacing (segment) values for a packet of the given byte length. */
+                                
                                 private fun lacingFor(length: Int): IntArray {
                                     val segs = mutableListOf<Int>()
                                     var remaining = length
