@@ -17,15 +17,15 @@ Whether you're organizing a massive local music library, fixing messy metadata, 
 
 ### How does it work?
 
-Simply open Flac-R and grant it access to your local music directory. Tap on any audio file to instantly view its current metadata. You can manually edit track names, artists, albums, genres, and track numbers, or easily update the embedded cover art. And once you are happy with the changes, just hit save, and your audio files will be permanently updated right on your device storage!
+Simply open Flac-R & grant it access to your local music directory. Tap on any audio file to view its current metadata contents. From there you can manually edit track names, artists, albums, years, genres, track numbers, Disc Numbers, Album Artists, Composers, Comments & Lyrics or easily manage the embedded cover art. Then, once you are happy with the changes, just hit save, and your audio files will be permanently updated right on your device's storage!
 
 ### Features
 
-🏷️ **Comprehensive Tagging:** Seamlessly read and modify metadata for your local audio files, ensuring your library is perfectly organized.
+🏷️ **Comprehensive Tagging:** Seamlessly read or modify metadata for your local audio files, ensuring your library is perfectly organized.
 
-📦 **Batch Tagging:** Edit multiple files at once even if the file formats are different.
+📦 **Batch Tagging:** Edit multiple files at once even if the file formats vary.
 
-🖼️ **Album Art Management:** Easily embed, extract, or replace cover art directly within your audio tracks.
+🖼️ **Album Art Management:** Easily embed or replace cover art directly within your audio tracks.
 
 🎨 **Material You Integration:** A clean, modern theme engine that supports Android 12+ dynamic coloring, adjusting your app's palette to match your wallpaper.
 
