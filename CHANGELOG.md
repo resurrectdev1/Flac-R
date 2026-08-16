@@ -14,6 +14,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * Fixed Android's "MediaStore" not knowing when a file changed (Will fix some audio formats not loading new album cover art on certain players)
 
+### Changed
+
+* Gradle bump to 9.5.1
+
 ---
 
 ## [0.5.4] - 2026-08-05
