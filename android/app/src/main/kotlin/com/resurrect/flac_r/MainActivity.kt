@@ -1,5 +1,7 @@
 package com.resurrect.flac_r
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
 import com.mpatric.mp3agic.Mp3File
 import org.jaudiotagger.audio.AudioFileIO
@@ -65,7 +67,11 @@ class MainActivity : FlutterFragmentActivity() {
                     "writeExtraTags" -> {
                         val composer = call.argument<String>("composer")
                         val comment  = call.argument<String>("comment")
-                        writeExtraTags(path, composer, comment)
+                        val artworkChanged = call.argument<Boolean>("artworkChanged") ?: false
+                        @Suppress("UNCHECKED_CAST")
+                        val artworkList = call.argument<List<Int>>("artworkBytes")
+                        val artworkBytes = artworkList?.map { it.toByte() }?.toByteArray()
+                        writeExtraTags(path, composer, comment, artworkBytes, artworkChanged)
                         result.success(null)
                     }
                     "writeAllTags" -> {
@@ -143,14 +149,20 @@ class MainActivity : FlutterFragmentActivity() {
         )
     }
 
-    private fun writeExtraTags(path: String, composer: String?, comment: String?) {
+    private fun writeExtraTags(
+        path: String,
+        composer: String?,
+        comment: String?,
+        artworkBytes: ByteArray? = null,
+        artworkChanged: Boolean = false,
+    ) {
         val lower = path.lowercase()
         when {
             lower.endsWith(".mp3")  -> writeMp3ExtraTags(path, composer, comment)
             lower.endsWith(".aac")  -> writeAacExtraTags(path, composer, comment)
             lower.endsWith(".flac") ||
             lower.endsWith(".ogg")  -> writeFlacExtraTags(path, composer, comment)
-            lower.endsWith(".opus") -> writeOpusExtraTags(path, composer, comment)
+            lower.endsWith(".opus") -> writeOpusExtraTags(path, composer, comment, artworkBytes, artworkChanged)
             lower.endsWith(".m4a")  -> writeM4aExtraTags(path, composer, comment)
         }
     }
@@ -857,7 +869,53 @@ class MainActivity : FlutterFragmentActivity() {
                                     return raw
                                 }
 
-                                private fun writeOpusExtraTags(path: String, composer: String?, comment: String?) {
+                                private fun beIntBytes(v: Int): ByteArray = byteArrayOf(
+                                    ((v shr 24) and 0xFF).toByte(),
+                                    ((v shr 16) and 0xFF).toByte(),
+                                    ((v shr  8) and 0xFF).toByte(),
+                                    ( v         and 0xFF).toByte(),
+                                )
+
+                                private fun sniffImageMimeType(bytes: ByteArray): String {
+                                    if (bytes.size >= 8 &&
+                                        bytes[0] == 0x89.toByte() && bytes[1] == 'P'.code.toByte() &&
+                                        bytes[2] == 'N'.code.toByte()  && bytes[3] == 'G'.code.toByte()) {
+                                        return "image/png"
+                                    }
+                                    if (bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte()) {
+                                        return "image/jpeg"
+                                    }
+                                    return "image/jpeg"
+                                }
+                                
+                                private fun buildFlacPictureBlock(imageBytes: ByteArray, mimeType: String): ByteArray {
+                                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                                    BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, bounds)
+                                    val width  = if (bounds.outWidth  > 0) bounds.outWidth  else 0
+                                    val height = if (bounds.outHeight > 0) bounds.outHeight else 0
+
+                                    val mimeBytes = mimeType.toByteArray(Charsets.US_ASCII)
+                                    val out = java.io.ByteArrayOutputStream()
+                                    out.write(beIntBytes(3))
+                                    out.write(beIntBytes(mimeBytes.size))
+                                    out.write(mimeBytes)
+                                    out.write(beIntBytes(0))
+                                    out.write(beIntBytes(width))
+                                    out.write(beIntBytes(height))
+                                    out.write(beIntBytes(24))
+                                    out.write(beIntBytes(0))
+                                    out.write(beIntBytes(imageBytes.size))
+                                    out.write(imageBytes)
+                                    return out.toByteArray()
+                                }
+
+                                private fun writeOpusExtraTags(
+                                    path: String,
+                                    composer: String?,
+                                    comment: String?,
+                                    artworkBytes: ByteArray? = null,
+                                    artworkChanged: Boolean = false,
+                                ) {
                                     val file  = File(path)
                                     val bytes = file.readBytes()
 
@@ -879,6 +937,15 @@ class MainActivity : FlutterFragmentActivity() {
                                         if (comment != null) {
                                             if (comment.isBlank()) { existing.remove("COMMENT"); existing.remove("DESCRIPTION") }
                                             else                    existing["COMMENT"] = comment
+                                        }
+                                        if (artworkChanged) {
+                                            existing.remove("METADATA_BLOCK_PICTURE")
+                                            if (artworkBytes != null && artworkBytes.isNotEmpty()) {
+                                                val mime = sniffImageMimeType(artworkBytes)
+                                                val pictureBlock = buildFlacPictureBlock(artworkBytes, mime)
+                                                existing["METADATA_BLOCK_PICTURE"] =
+                                                    Base64.encodeToString(pictureBlock, Base64.NO_WRAP)
+                                            }
                                         }
                                         val newCommentPacket = OPUS_TAGS_MAGIC + encodeCommentList(existing)
                                         val finalPage = pages[loc.endPageIdx]
