@@ -42,11 +42,15 @@ class ExtraTags {
     String path, {
     String? composer,
     String? comment,
+    List<int>? artworkBytes,
+    bool artworkChanged = false,
   }) async {
     await _channel.invokeMethod('writeExtraTags', {
       'path': path,
       'composer': ?composer,
       'comment': ?comment,
+      'artworkBytes': ?artworkBytes,
+      'artworkChanged': artworkChanged,
     });
   }
 
