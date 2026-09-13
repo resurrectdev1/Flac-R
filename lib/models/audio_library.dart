@@ -239,8 +239,9 @@ class AudioScanner {
       }
     }
 
-    if (skipped > 0)
+    if (skipped > 0) {
       debugPrint('AudioScanner: skipped $skipped unreadable file(s)');
+    }
     return ScanResult(files: results, skipped: skipped);
   }
 
@@ -356,8 +357,9 @@ class AudioScanner {
     if (bytes[0] != 0x66 ||
         bytes[1] != 0x4C ||
         bytes[2] != 0x61 ||
-        bytes[3] != 0x43)
+        bytes[3] != 0x43) {
       return null;
+    }
     int pos = 4;
     while (pos + 4 <= bytes.length) {
       final blockType = bytes[pos] & 0x7F;
