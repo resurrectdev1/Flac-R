@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > Changes staged for the next release go here. Move them down when you cut a tag.
 
+---
+
+## [0.5.6] - 2026-09-13
+
 ### Fixed
 
 * Fixed Android's "MediaStore" not knowing when a file changed (Will fix some audio formats not loading new album cover art on certain players)
