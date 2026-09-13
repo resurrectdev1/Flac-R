@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 * Fixed Android's "MediaStore" not knowing when a file changed (Will fix some audio formats not loading new album cover art on certain players)
+* Fixed .opus cover art not showing up on some music players (e.g. Fossify, PixelPlayer) after editing
 
 ### Changed
 
