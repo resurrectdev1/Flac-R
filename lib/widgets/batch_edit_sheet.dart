@@ -196,6 +196,31 @@ class _BatchEditSheetState extends State<BatchEditSheet> {
                 ? (resolvedArtwork != null ? resolvedArtwork.toList() : [])
                 : null,
           );
+        } else if (file.path.toLowerCase().endsWith('.opus')) {
+          await AudioTags.write(
+            file.path,
+            Tag(
+              title: tag.title,
+              trackArtist: tag.trackArtist,
+              album: tag.album,
+              year: tag.year,
+              genre: tag.genre,
+              trackNumber: tag.trackNumber,
+              discNumber: tag.discNumber,
+              albumArtist: tag.albumArtist,
+              lyrics: tag.lyrics,
+              pictures: [],
+            ),
+          );
+          await ExtraTags.write(
+            file.path,
+            composer: newComposer.isNotEmpty ? newComposer : file.composer,
+            comment: newComment.isNotEmpty ? newComment : file.comment,
+            artworkBytes: _artworkChanged
+                ? (resolvedArtwork != null ? resolvedArtwork.toList() : [])
+                : null,
+            artworkChanged: _artworkChanged,
+          );
         } else {
           await AudioTags.write(file.path, tag);
           await ExtraTags.write(
