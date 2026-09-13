@@ -278,6 +278,31 @@ class _EditSheetState extends State<EditSheet> {
               ? (artwork != null ? artwork.toList() : [])
               : null,
         );
+      } else if (f.path.toLowerCase().endsWith('.opus')) {
+        await AudioTags.write(
+          f.path,
+          Tag(
+            title: tag.title,
+            trackArtist: tag.trackArtist,
+            album: tag.album,
+            year: tag.year,
+            genre: tag.genre,
+            trackNumber: tag.trackNumber,
+            discNumber: tag.discNumber,
+            albumArtist: tag.albumArtist,
+            lyrics: tag.lyrics,
+            pictures: [],
+          ),
+        );
+        await ExtraTags.write(
+          f.path,
+          composer: composerVal,
+          comment: commentVal,
+          artworkBytes: _artworkChanged
+              ? (artwork != null ? artwork.toList() : [])
+              : null,
+          artworkChanged: _artworkChanged,
+        );
       } else {
         await AudioTags.write(f.path, tag);
         await ExtraTags.write(
