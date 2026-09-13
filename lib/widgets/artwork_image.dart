@@ -48,11 +48,12 @@ class _ArtworkImageState extends State<ArtworkImage> {
 
   Future<void> _load() async {
     final bytes = await ArtworkCache.instance.get(widget.path);
-    if (mounted)
+    if (mounted) {
       setState(() {
         _bytes = bytes;
         _loaded = true;
       });
+    }
   }
 
   @override
