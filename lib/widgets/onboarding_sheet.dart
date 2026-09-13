@@ -83,20 +83,22 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
         setState(() => _requesting = true);
         PermissionStatus status = await Permission.audio.request();
         if (!status.isGranted) await Permission.storage.request();
-        if (mounted)
+        if (mounted) {
           setState(() {
             _requesting = false;
             _nextPageOrFinish();
           });
+        }
 
       case _StepKind.manageStorage:
         setState(() => _requesting = true);
         await Permission.manageExternalStorage.request();
-        if (mounted)
+        if (mounted) {
           setState(() {
             _requesting = false;
             _nextPageOrFinish();
           });
+        }
 
       case _StepKind.folderPick:
         final picked = await FilePicker.platform.getDirectoryPath(
