@@ -209,8 +209,7 @@ class AudioScanner {
     }
 
     final total = allFiles.length;
-
-    const concurrency = 6;
+    const concurrency = 2;
     int completed = 0;
 
     for (int start = 0; start < allFiles.length; start += concurrency) {
@@ -250,6 +249,7 @@ class AudioScanner {
     try {
       final tag = await AudioTags.read(entity.path);
       final hasArtwork = tag?.pictures != null && tag!.pictures.isNotEmpty;
+      tag?.pictures.clear();
 
       final trackNumber =
           tag?.trackNumber ?? await _fallbackTrackNumber(entity.path, lower);
@@ -289,20 +289,24 @@ class AudioScanner {
     String path,
     String lowerPath,
   ) async {
+    final isMp3 = lowerPath.endsWith('.mp3');
+    final isFlac = lowerPath.endsWith('.flac');
+    if (!isMp3 && !isFlac) return null;
+
     const mp3Cap = 2 * 1024 * 1024;
     const flacCap = 4 * 1024 * 1024;
 
     try {
       final file = File(path);
       final length = await file.length();
-      final cap = lowerPath.endsWith('.flac') ? flacCap : mp3Cap;
+      final cap = isFlac ? flacCap : mp3Cap;
       final readLen = length < cap ? length : cap;
 
       final raf = await file.open();
       try {
         final bytes = await raf.read(readLen);
-        if (lowerPath.endsWith('.mp3')) return _id3TrackNumber(bytes);
-        if (lowerPath.endsWith('.flac')) return _vorbisTrackNumber(bytes);
+        if (isMp3) return _id3TrackNumber(bytes);
+        if (isFlac) return _vorbisTrackNumber(bytes);
       } finally {
         await raf.close();
       }
