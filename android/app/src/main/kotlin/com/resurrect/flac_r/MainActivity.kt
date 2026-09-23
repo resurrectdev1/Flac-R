@@ -36,12 +36,15 @@ class MainActivity : FlutterFragmentActivity() {
                 @Suppress("UNCHECKED_CAST")
                 val paths = call.argument<List<String>>("paths") ?: emptyList()
                 val batchResult = mutableMapOf<String, Map<String, String?>>()
-                for (p in paths) {
-                    batchResult[p] = try {
-                        readExtraTags(p)
-                    } catch (e: Exception) {
-                        Log.w(TAG, "readExtraTagsBatch: failed for $p: ${e.message}")
-                        mapOf("composer" to null, "comment" to null)
+                val chunkSize = 50
+                for (chunk in paths.chunked(chunkSize)) {
+                    for (p in chunk) {
+                        batchResult[p] = try {
+                            readExtraTags(p)
+                        } catch (e: Exception) {
+                            Log.w(TAG, "readExtraTagsBatch: failed for $p: ${e.message}")
+                            mapOf("composer" to null, "comment" to null)
+                        }
                     }
                 }
                 result.success(batchResult)
@@ -106,6 +109,22 @@ class MainActivity : FlutterFragmentActivity() {
             }
     }
 
+    private fun readFileCapped(path: String, maxBytes: Int): ByteArray {
+        val file = File(path)
+        val len  = file.length()
+        if (len <= maxBytes) return file.readBytes()
+        RandomAccessFile(path, "r").use { raf ->
+            val buf = ByteArray(maxBytes)
+            var offset = 0
+            while (offset < maxBytes) {
+                val n = raf.read(buf, offset, maxBytes - offset)
+                if (n < 0) break
+                offset += n
+            }
+            return if (offset == maxBytes) buf else buf.copyOf(offset)
+        }
+    }
+
     private fun readExtraTags(path: String): Map<String, String?> {
         val lower = path.lowercase()
         return when {
@@ -142,7 +161,8 @@ class MainActivity : FlutterFragmentActivity() {
     }
 
     private fun readFlacExtraTags(path: String): Map<String, String?> {
-        val comments = parseVorbisComments(File(path).readBytes())
+        val bytes = readFileCapped(path, maxBytes = 4 * 1024 * 1024)
+        val comments = parseVorbisComments(bytes)
         return mapOf(
             "composer" to comments["COMPOSER"]?.ifBlank { null },
             "comment"  to (comments["COMMENT"] ?: comments["DESCRIPTION"])?.ifBlank { null }
@@ -355,7 +375,7 @@ class MainActivity : FlutterFragmentActivity() {
                                 }
 
                                 private fun readAacExtraTags(path: String): Map<String, String?> {
-                                    val bytes = File(path).readBytes()
+                                    val bytes = readFileCapped(path, maxBytes = 2 * 1024 * 1024)
                                     val tag = parseId3v2Tag(bytes)
                                     val composer = tag?.frames?.firstOrNull { it.id == "TCOM" }?.let { decodeTcomFrame(it.data) }?.ifBlank { null }
                                     val commentFromV2 = tag?.frames?.firstOrNull { it.id == "COMM" }?.let { decodeCommFrame(it.data) }?.ifBlank { null }
@@ -816,7 +836,7 @@ class MainActivity : FlutterFragmentActivity() {
                                 }
 
                                 private fun readOpusExtraTags(path: String): Map<String, String?> {
-                                    val bytes = File(path).readBytes()
+                                    val bytes = readFileCapped(path, maxBytes = 2 * 1024 * 1024)
                                     val (_, pages) = collectOpusPages(bytes) ?: return mapOf("composer" to null, "comment" to null)
                                     val loc = locateFirstPacket(pages, bytes) ?: return mapOf("composer" to null, "comment" to null)
                                     if (loc.bytes.size < 8 || !bytesEqual(loc.bytes, 0, OPUS_TAGS_MAGIC)) {
