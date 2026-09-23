@@ -209,6 +209,7 @@ class AudioScanner {
     }
 
     final total = allFiles.length;
+
     const concurrency = 2;
     int completed = 0;
 
