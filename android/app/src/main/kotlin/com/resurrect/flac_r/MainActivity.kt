@@ -179,7 +179,7 @@ class MainActivity : FlutterFragmentActivity() {
         val lower = path.lowercase()
         when {
             lower.endsWith(".mp3")  -> writeMp3ExtraTags(path, composer, comment)
-            lower.endsWith(".aac")  -> writeAacExtraTags(path, composer, comment)
+            lower.endsWith(".aac")  -> writeAacExtraTags(path, composer, comment, artworkBytes, artworkChanged)
             lower.endsWith(".flac") ||
             lower.endsWith(".ogg")  -> writeFlacExtraTags(path, composer, comment)
             lower.endsWith(".opus") -> writeOpusExtraTags(path, composer, comment, artworkBytes, artworkChanged)
@@ -383,12 +383,32 @@ class MainActivity : FlutterFragmentActivity() {
                                     return mapOf("composer" to composer, "comment" to comment)
                                 }
 
-                                private fun writeAacExtraTags(path: String, composer: String?, comment: String?) {
+                                private fun buildApicFrameData(imageBytes: ByteArray, mimeType: String): ByteArray {
+                                    val out = java.io.ByteArrayOutputStream()
+                                    out.write(0)
+                                    out.write(mimeType.toByteArray(Charsets.US_ASCII))
+                                    out.write(0)
+                                    out.write(3)
+                                    out.write(0)
+                                    out.write(imageBytes)
+                                    return out.toByteArray()
+                                }
+
+                                private fun writeAacExtraTags(
+                                    path: String,
+                                    composer: String?,
+                                    comment: String?,
+                                    artworkBytes: ByteArray? = null,
+                                    artworkChanged: Boolean = false,
+                                ) {
                                     val file  = File(path)
                                     val bytes = file.readBytes()
                                     val existing = parseId3v2Tag(bytes)
                                     val majorVersion = existing?.majorVersion?.coerceAtLeast(3) ?: 4
-                                    val keptFrames = (existing?.frames ?: emptyList()).filter { it.id != "TCOM" && it.id != "COMM" }
+
+                                    val framesToDrop = mutableSetOf("TCOM", "COMM")
+                                    if (artworkChanged) framesToDrop.add("APIC")
+                                    val keptFrames = (existing?.frames ?: emptyList()).filter { it.id !in framesToDrop }
 
                                     val existingComposer = existing?.frames?.firstOrNull { it.id == "TCOM" }?.let { decodeTcomFrame(it.data) }
                                     val existingComment  = existing?.frames?.firstOrNull { it.id == "COMM" }?.let { decodeCommFrame(it.data) }
@@ -416,6 +436,10 @@ class MainActivity : FlutterFragmentActivity() {
                                     if (!finalComment.isNullOrEmpty()) {
                                         val enc = chooseId3Encoding(finalComment, majorVersion)
                                         frameBytesList.add(buildId3Frame("COMM", buildCommFrameData(finalComment, enc), majorVersion))
+                                    }
+                                    if (artworkChanged && artworkBytes != null && artworkBytes.isNotEmpty()) {
+                                        val mime = sniffImageMimeType(artworkBytes)
+                                        frameBytesList.add(buildId3Frame("APIC", buildApicFrameData(artworkBytes, mime), majorVersion))
                                     }
 
                                     val bodySize = frameBytesList.sumOf { it.size }
@@ -580,6 +604,18 @@ class MainActivity : FlutterFragmentActivity() {
                                             if (args.containsKey("composer"))    mp3.id3v2Tag.composer = (args["composer"]    as? String)?.ifBlank { null }
                                             if (args.containsKey("comment"))     mp3.id3v2Tag.comment  = (args["comment"]     as? String)?.ifBlank { null }
                                             if (args.containsKey("lyrics"))      mp3.id3v2Tag.lyrics   = (args["lyrics"]      as? String)?.ifBlank { null }
+
+                                            if (args.containsKey("artworkBytes")) {
+                                                @Suppress("UNCHECKED_CAST")
+                                                val artworkList = args["artworkBytes"] as? List<Int>
+                                                if (artworkList.isNullOrEmpty()) {
+                                                    mp3.id3v2Tag.clearAlbumImage()
+                                                } else {
+                                                    val imageBytes = artworkList.map { it.toByte() }.toByteArray()
+                                                    val mime = sniffImageMimeType(imageBytes)
+                                                    mp3.id3v2Tag.setAlbumImage(imageBytes, mime)
+                                                }
+                                            }
 
                                             val tmpPath = "$path.tmp"
                                             mp3.save(tmpPath)
