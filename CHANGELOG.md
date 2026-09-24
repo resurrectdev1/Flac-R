@@ -12,6 +12,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5.8] - 2026-09-23
+
+### Fixed
+
+* Fixed .aac cover art not appearing in music players
+* Fixed out of memory crash when editing large files
+
+---
+
 ## [0.5.6] - 2026-09-13
 
 ### Fixed
