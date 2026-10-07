@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 * Theme picker to use RadioGroup
+* Custom hex accent picker
 
 ---
 
