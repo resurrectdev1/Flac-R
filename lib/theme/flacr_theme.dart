@@ -5,7 +5,8 @@ enum FlacRThemeMode { darkSlate, amoledBlack, materialYou, whiteMinimal }
 class FlacRTheme {
   final FlacRThemeMode mode;
   final ColorScheme? dynamicScheme;
-  const FlacRTheme({required this.mode, this.dynamicScheme});
+  final Color? customAccent;
+  const FlacRTheme({required this.mode, this.dynamicScheme, this.customAccent});
 
   Color get bg {
     switch (mode) {
@@ -60,6 +61,13 @@ class FlacRTheme {
   }
 
   Color get primary {
+    if (customAccent != null && mode != FlacRThemeMode.materialYou) {
+      return customAccent!;
+    }
+    return defaultPrimary;
+  }
+
+  Color get defaultPrimary {
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF7B68EE);
@@ -125,4 +133,21 @@ class FlacRTheme {
   static const accentBlue = Color(0xFF5B8DEF);
   static const accentTeal = Color(0xFF3EC9C9);
   static const errorRed = Color(0xFFCF6679);
+
+  static const List<Color> accentPresets = [
+    Color(0xFF7B68EE),
+    Color(0xFF5B8DEF),
+    Color(0xFF42A5C8),
+    Color(0xFF3EC9C9),
+    Color(0xFF4E8B7A),
+    Color(0xFF4CAF82),
+    Color(0xFF7A9E3B),
+    Color(0xFFFFBF00),
+    Color(0xFFC46A4A),
+    Color(0xFFE5624D),
+    Color(0xFFE0529C),
+    Color(0xFF9E3B6B),
+    Color(0xFF8B5E9E),
+    Color(0xFF6B7A7D),
+  ];
 }
