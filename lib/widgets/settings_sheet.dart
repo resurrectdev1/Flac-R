@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/audio_library.dart';
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
+import 'accent_picker_sheet.dart';
 import 'shared_widgets.dart';
 
 class FlacRSettingsSheet extends StatefulWidget {
@@ -66,10 +67,10 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                 child: Column(
                   children: FlacRThemeMode.values.map((mode) {
                     const labels = {
-                  FlacRThemeMode.darkSlate: 'Dark Slate',
-                  FlacRThemeMode.amoledBlack: 'AMOLED Black',
-                  FlacRThemeMode.materialYou: 'Material You',
-                  FlacRThemeMode.whiteMinimal: 'White Minimal',
+                      FlacRThemeMode.darkSlate: 'Dark Slate',
+                      FlacRThemeMode.amoledBlack: 'AMOLED Black',
+                      FlacRThemeMode.materialYou: 'Material You',
+                      FlacRThemeMode.whiteMinimal: 'White Minimal',
                     };
                     return RadioListTile<FlacRThemeMode>(
                       value: mode,
@@ -88,6 +89,8 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                   }).toList(),
                 ),
               ),
+              const SizedBox(height: 8),
+              _AccentRow(settings: liveSettings),
               const SizedBox(height: 28),
               Text(
                 'SCAN FOLDERS',
@@ -312,4 +315,86 @@ Future<void> showFlacRSettingsSheet(BuildContext context) {
     ),
     builder: (_) => const FlacRSettingsSheet(),
   );
+}
+
+class _AccentRow extends StatelessWidget {
+  const _AccentRow({required this.settings});
+  final FlacRSettings settings;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = settings.theme;
+    final usesSystemColors = settings.themeMode == FlacRThemeMode.materialYou;
+    final custom = settings.customAccent;
+
+    final subtitle = usesSystemColors
+        ? 'Not available with Material You'
+        : custom != null
+        ? '#${colorToHex(custom)}'
+        : 'Default';
+
+    return Opacity(
+      opacity: usesSystemColors ? 0.5 : 1,
+      child: GestureDetector(
+        onTap: usesSystemColors
+            ? null
+            : () {
+                HapticFeedback.selectionClick();
+                showAccentPickerSheet(context);
+              },
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            color: theme.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: theme.textMuted.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: theme.primary,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: theme.textMuted.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primary.withValues(alpha: 0.45),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Custom Accent',
+                      style: TextStyle(fontSize: 14, color: theme.textPrimary),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 11, color: theme.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: theme.textMuted,
+                size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
