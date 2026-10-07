@@ -8,11 +8,16 @@ class FlacRSettings extends ChangeNotifier {
   ColorScheme? _dynamicScheme;
   bool _onboardingDone = false;
   List<String> _scanRoots = [];
+  Color? _customAccent;
 
   FlacRThemeMode get themeMode => _themeMode;
   bool get onboardingDone => _onboardingDone;
-  FlacRTheme get theme =>
-      FlacRTheme(mode: _themeMode, dynamicScheme: _dynamicScheme);
+  Color? get customAccent => _customAccent;
+  FlacRTheme get theme => FlacRTheme(
+    mode: _themeMode,
+    dynamicScheme: _dynamicScheme,
+    customAccent: _customAccent,
+  );
   List<String> get scanRoots => List.unmodifiable(_scanRoots);
 
   Future<void> init(ColorScheme? dynamicLight, ColorScheme? dynamicDark) async {
@@ -23,6 +28,8 @@ class FlacRSettings extends ChangeNotifier {
     }
     _onboardingDone = prefs.getBool('flacr_onboarding_done') ?? false;
     _scanRoots = prefs.getStringList('flacr_scan_roots') ?? [];
+    final accentInt = prefs.getInt('flacr_custom_accent');
+    if (accentInt != null) _customAccent = Color(accentInt);
     _dynamicScheme = dynamicDark;
     notifyListeners();
   }
@@ -61,6 +68,17 @@ class FlacRSettings extends ChangeNotifier {
     _themeMode = mode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('flacr_theme_mode', mode.index);
+    notifyListeners();
+  }
+
+  Future<void> setCustomAccent(Color? color) async {
+    _customAccent = color;
+    final prefs = await SharedPreferences.getInstance();
+    if (color == null) {
+      await prefs.remove('flacr_custom_accent');
+    } else {
+      await prefs.setInt('flacr_custom_accent', color.toARGB32());
+    }
     notifyListeners();
   }
 
