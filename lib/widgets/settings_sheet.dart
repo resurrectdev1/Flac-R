@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -55,86 +56,38 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                 ),
               ),
               const SizedBox(height: 10),
-              ...FlacRThemeMode.values.map((mode) {
-                final labels = {
-                  FlacRThemeMode.darkSlate: (
-                    'Dark Slate',
-                    'Default dark theme',
-                  ),
-                  FlacRThemeMode.amoledBlack: (
-                    'AMOLED Black',
-                    'Pure black for OLED screens',
-                  ),
-                  FlacRThemeMode.materialYou: (
-                    'Material You',
-                    'Follows your wallpaper colours',
-                  ),
-                  FlacRThemeMode.whiteMinimal: (
-                    'White Minimal',
-                    'Clean light theme',
-                  ),
-                };
-                final (label, sub) = labels[mode]!;
-                final isActive = liveSettings.themeMode == mode;
-                return GestureDetector(
-                  onTap: () async {
-                    await liveSettings.setThemeMode(mode);
-                    setState(() {});
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? theme.primary.withValues(alpha: 0.1)
-                          : theme.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isActive
-                            ? theme.primary.withValues(alpha: 0.5)
-                            : theme.textMuted.withValues(alpha: 0.2),
+              RadioGroup<FlacRThemeMode>(
+                groupValue: liveSettings.themeMode,
+                onChanged: (mode) {
+                  if (mode == null) return;
+                  HapticFeedback.selectionClick();
+                  liveSettings.setThemeMode(mode);
+                },
+                child: Column(
+                  children: FlacRThemeMode.values.map((mode) {
+                    const labels = {
+                  FlacRThemeMode.darkSlate: 'Dark Slate',
+                  FlacRThemeMode.amoledBlack: 'AMOLED Black',
+                  FlacRThemeMode.materialYou: 'Material You',
+                  FlacRThemeMode.whiteMinimal: 'White Minimal',
+                    };
+                    return RadioListTile<FlacRThemeMode>(
+                      value: mode,
+                      activeColor: theme.primary,
+                      fillColor: WidgetStateProperty.resolveWith(
+                        (states) => states.contains(WidgetState.selected)
+                            ? theme.primary
+                            : theme.textMuted,
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                label,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: isActive
-                                      ? theme.primary
-                                      : theme.textPrimary,
-                                ),
-                              ),
-                              Text(
-                                sub,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: theme.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (isActive)
-                          Icon(
-                            Icons.check_circle_rounded,
-                            color: theme.primary,
-                            size: 18,
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        labels[mode]!,
+                        style: TextStyle(color: theme.textPrimary),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
               const SizedBox(height: 28),
               Text(
                 'SCAN FOLDERS',
