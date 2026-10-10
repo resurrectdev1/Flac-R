@@ -1,14 +1,31 @@
 import 'package:flutter/material.dart';
 
-enum FlacRThemeMode { darkSlate, amoledBlack, materialYou, whiteMinimal }
+enum FlacRThemeMode { darkSlate, amoledBlack, whiteMinimal }
 
 class FlacRTheme {
   final FlacRThemeMode mode;
-  final ColorScheme? dynamicScheme;
+
+  final bool materialYou;
+  final ColorScheme? dynamicLight;
+  final ColorScheme? dynamicDark;
   final Color? customAccent;
-  const FlacRTheme({required this.mode, this.dynamicScheme, this.customAccent});
+  const FlacRTheme({
+    required this.mode,
+    this.materialYou = false,
+    this.dynamicLight,
+    this.dynamicDark,
+    this.customAccent,
+  });
+
+  ColorScheme? get _dyn {
+    if (!materialYou) return null;
+    return brightness == Brightness.light ? dynamicLight : dynamicDark;
+  }
+
+  bool get _dynSurfaces => _dyn != null && mode != FlacRThemeMode.amoledBlack;
 
   Color get bg {
+    if (_dynSurfaces) return _dyn!.surface;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF0D0F14);
@@ -16,12 +33,11 @@ class FlacRTheme {
         return const Color(0xFF000000);
       case FlacRThemeMode.whiteMinimal:
         return const Color(0xFFF5F5F5);
-      case FlacRThemeMode.materialYou:
-        return dynamicScheme?.surface ?? const Color(0xFF0D0F14);
     }
   }
 
   Color get surface {
+    if (_dynSurfaces) return _dyn!.surfaceContainerLow;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF13161E);
@@ -29,12 +45,11 @@ class FlacRTheme {
         return const Color(0xFF0A0A0A);
       case FlacRThemeMode.whiteMinimal:
         return const Color(0xFFFFFFFF);
-      case FlacRThemeMode.materialYou:
-        return dynamicScheme?.surfaceContainerLow ?? const Color(0xFF13161E);
     }
   }
 
   Color get surfaceHigh {
+    if (_dynSurfaces) return _dyn!.surfaceContainerHigh;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF1C2030);
@@ -42,12 +57,11 @@ class FlacRTheme {
         return const Color(0xFF121212);
       case FlacRThemeMode.whiteMinimal:
         return const Color(0xFFE8E8E8);
-      case FlacRThemeMode.materialYou:
-        return dynamicScheme?.surfaceContainerHigh ?? const Color(0xFF1C2030);
     }
   }
 
   Color get cardBg {
+    if (_dynSurfaces) return _dyn!.surfaceContainer;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF161929);
@@ -55,15 +69,12 @@ class FlacRTheme {
         return const Color(0xFF000000);
       case FlacRThemeMode.whiteMinimal:
         return const Color(0xFFFAFAFA);
-      case FlacRThemeMode.materialYou:
-        return dynamicScheme?.surfaceContainer ?? const Color(0xFF161929);
     }
   }
 
   Color get primary {
-    if (customAccent != null && mode != FlacRThemeMode.materialYou) {
-      return customAccent!;
-    }
+    if (_dyn != null) return _dyn!.primary;
+    if (customAccent != null) return customAccent!;
     return defaultPrimary;
   }
 
@@ -75,12 +86,11 @@ class FlacRTheme {
         return const Color(0xFF7B68EE);
       case FlacRThemeMode.whiteMinimal:
         return const Color(0xFF5A4FCF);
-      case FlacRThemeMode.materialYou:
-        return dynamicScheme?.primary ?? const Color(0xFF7B68EE);
     }
   }
 
   Color get textPrimary {
+    if (_dynSurfaces) return _dyn!.onSurface;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFFE8E8F0);
@@ -88,12 +98,11 @@ class FlacRTheme {
         return const Color(0xFFFFFFFF);
       case FlacRThemeMode.whiteMinimal:
         return const Color(0xFF1A1A1A);
-      case FlacRThemeMode.materialYou:
-        return dynamicScheme?.onSurface ?? const Color(0xFFE8E8F0);
     }
   }
 
   Color get textSecondary {
+    if (_dynSurfaces) return _dyn!.onSurfaceVariant;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF8888AA);
@@ -101,12 +110,11 @@ class FlacRTheme {
         return const Color(0xFFAAAAAA);
       case FlacRThemeMode.whiteMinimal:
         return const Color(0xFF666666);
-      case FlacRThemeMode.materialYou:
-        return dynamicScheme?.onSurfaceVariant ?? const Color(0xFF8888AA);
     }
   }
 
   Color get textMuted {
+    if (_dynSurfaces) return _dyn!.outline;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF444466);
@@ -114,8 +122,6 @@ class FlacRTheme {
         return const Color(0xFF555555);
       case FlacRThemeMode.whiteMinimal:
         return const Color(0xFF999999);
-      case FlacRThemeMode.materialYou:
-        return dynamicScheme?.outline ?? const Color(0xFF444466);
     }
   }
 
