@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import '../models/audio_file.dart';
 import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/transitions.dart';
 import '../utils/sort_utils.dart';
 import '../widgets/scan_progress_view.dart';
+import '../widgets/reveal.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/track_tile.dart';
 
@@ -31,6 +33,7 @@ class _GroupViewState extends State<GroupView> {
   SortOrder _order = SortOrder.asc;
   String _query = '';
   final _searchCtrl = TextEditingController();
+  final EntranceTracker _entrance = EntranceTracker();
 
   @override
   void dispose() {
@@ -70,6 +73,7 @@ class _GroupViewState extends State<GroupView> {
                 ? a.toLowerCase().compareTo(b.toLowerCase())
                 : b.toLowerCase().compareTo(a.toLowerCase()),
           );
+    _entrance.sync(keys.take(24));
 
     return Column(
       children: [
@@ -144,19 +148,23 @@ class _GroupViewState extends State<GroupView> {
                 (t) => t.hasArtwork,
                 orElse: () => tracks.first,
               );
-              return GroupTile(
-                theme: theme,
-                artworkPath: coverTrack.hasArtwork ? coverTrack.path : null,
-                icon: widget.iconData,
-                title: groupName,
-                subtitle:
-                    '${tracks.length} track${tracks.length == 1 ? '' : 's'}',
-                tracks: tracks,
-                onTap: () => Navigator.push(
-                  ctx,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        DetailListPage(title: groupName, files: tracks),
+              return StaggeredEntrance(
+                tracker: _entrance,
+                id: groupName,
+                child: GroupTile(
+                  theme: theme,
+                  artworkPath: coverTrack.hasArtwork ? coverTrack.path : null,
+                  icon: widget.iconData,
+                  title: groupName,
+                  subtitle:
+                      '${tracks.length} track${tracks.length == 1 ? '' : 's'}',
+                  tracks: tracks,
+                  onTap: () => Navigator.push(
+                    ctx,
+                    FlacRoute<void>(
+                      builder: (_) =>
+                          DetailListPage(title: groupName, files: tracks),
+                    ),
                   ),
                 ),
               );
