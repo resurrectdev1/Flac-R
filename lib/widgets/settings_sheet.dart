@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/audio_library.dart';
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/motion.dart';
 import 'accent_picker_sheet.dart';
 import 'shared_widgets.dart';
 
@@ -319,6 +320,7 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
 
 Future<void> showFlacRSettingsSheet(BuildContext context) {
   return showModalBottomSheet(
+    sheetAnimationStyle: Motion.sheet,
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
