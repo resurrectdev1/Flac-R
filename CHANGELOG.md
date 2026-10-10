@@ -10,12 +10,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > Changes staged for the next release go here. Move them down when you cut a tag.
 
+### Added
+
+* Animations across the app, e.g. tracks, albums, artists and folders fade in one after another, tabs cross-fade when you switch, and tiles, the sort toggle and the bottom nav give subtle press feedback
+* Bottom nav icons and labels now animate their colour when you change tabs
+* Dialogs scale in, and opening an album, artist or folder has a new fade and scale transition
+* Shared motion settings in `lib/theme/motion.dart` so all animations use the same timing and easing
+* Custom hex accent picker
+
 ### Changed
 
 * Theme picker to use RadioGroup
-* Custom hex accent picker
 * Improved app icon (Made a proper gradient using digital tools instead of a hacky airbrush implementation of a gradient)
 * Material you into a toggle so it can be used alongside other themes
+* All animation durations and curves now use the shared motion settings, so sheets, dialogs and pickers feel consistent
 
 ---
 
