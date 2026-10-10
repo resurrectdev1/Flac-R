@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/audio_library.dart';
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/motion.dart';
 
 class FlacROnboardingSheet extends StatefulWidget {
   const FlacROnboardingSheet({super.key});
@@ -150,7 +151,9 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
           const SizedBox(height: 28),
 
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: Motion.slow,
+            switchInCurve: Motion.standard,
+            switchOutCurve: Motion.exit,
             transitionBuilder: (child, anim) =>
                 FadeTransition(opacity: anim, child: child),
             child: Container(
@@ -167,7 +170,9 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
           const SizedBox(height: 24),
 
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: Motion.slow,
+            switchInCurve: Motion.standard,
+            switchOutCurve: Motion.exit,
             child: Text(
               step.title,
               key: ValueKey('title_$_page'),
@@ -182,7 +187,9 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
           const SizedBox(height: 12),
 
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: Motion.slow,
+            switchInCurve: Motion.standard,
+            switchOutCurve: Motion.exit,
             child: Text(
               step.body,
               key: ValueKey('body_$_page'),
@@ -201,7 +208,8 @@ class _FlacROnboardingSheetState extends State<FlacROnboardingSheet> {
             children: List.generate(
               _steps.length,
               (i) => AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
+                duration: Motion.base,
+                curve: Motion.standard,
                 margin: const EdgeInsets.symmetric(horizontal: 3),
                 width: i == _page ? 18 : 6,
                 height: 6,
