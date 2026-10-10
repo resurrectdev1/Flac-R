@@ -5,6 +5,8 @@ import '../models/audio_file.dart';
 import '../models/audio_library.dart';
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/motion.dart';
+import '../widgets/reveal.dart';
 import '../utils/sort_utils.dart';
 import '../widgets/batch_banner.dart';
 import '../widgets/batch_edit_sheet.dart';
@@ -27,6 +29,7 @@ class TrackListViewState extends State<TrackListView> {
   bool _selectMode = false;
   final Set<String> _selected = {};
   final _searchCtrl = TextEditingController();
+  final EntranceTracker _entrance = EntranceTracker();
 
   @override
   void dispose() {
@@ -56,6 +59,7 @@ class TrackListViewState extends State<TrackListView> {
   void _showSortSheet() {
     final theme = widget.theme;
     showModalBottomSheet(
+      sheetAnimationStyle: Motion.sheet,
       context: context,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
@@ -184,7 +188,8 @@ class TrackListViewState extends State<TrackListView> {
           setSortState(() {});
         },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          duration: Motion.fast,
+          curve: Motion.standard,
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: active
@@ -217,6 +222,7 @@ class TrackListViewState extends State<TrackListView> {
         .toList();
     if (selectedFiles.isEmpty) return;
     showModalBottomSheet(
+      sheetAnimationStyle: Motion.sheet,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -349,6 +355,7 @@ class TrackListViewState extends State<TrackListView> {
     }
 
     final sorted = _sorted(files);
+    _entrance.sync(sorted.take(24).map((f) => f.path));
 
     return Column(
       children: [
@@ -472,17 +479,21 @@ class TrackListViewState extends State<TrackListView> {
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                     itemCount: sorted.length,
-                    itemBuilder: (ctx, i) => TrackTile(
-                      file: sorted[i],
-                      theme: theme,
-                      selectMode: _selectMode,
-                      isSelected: _selected.contains(sorted[i].path),
-                      onToggleSelect: (path) {
-                        setState(() {
-                          _selectMode = true;
-                          _toggleSelect(path);
-                        });
-                      },
+                    itemBuilder: (ctx, i) => StaggeredEntrance(
+                      tracker: _entrance,
+                      id: sorted[i].path,
+                      child: TrackTile(
+                        file: sorted[i],
+                        theme: theme,
+                        selectMode: _selectMode,
+                        isSelected: _selected.contains(sorted[i].path),
+                        onToggleSelect: (path) {
+                          setState(() {
+                            _selectMode = true;
+                            _toggleSelect(path);
+                          });
+                        },
+                      ),
                     ),
                   ),
           ),
