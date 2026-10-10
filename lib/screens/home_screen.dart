@@ -7,6 +7,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../models/audio_library.dart';
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/motion.dart';
+import '../widgets/press_scale.dart';
 import '../widgets/settings_sheet.dart';
 import '../widgets/onboarding_sheet.dart';
 import 'track_list_view.dart';
@@ -72,6 +74,7 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
   void _showOnboarding() {
     final settingsProvider = context.read<FlacRSettings>();
     showModalBottomSheet(
+      sheetAnimationStyle: Motion.sheet,
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -136,7 +139,29 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
           ),
         ],
       ),
-      body: SafeArea(bottom: false, child: _buildTabBody(theme)),
+      body: SafeArea(
+        bottom: false,
+        child: AnimatedSwitcher(
+          duration: Motion.base,
+          switchInCurve: Motion.standard,
+          switchOutCurve: Motion.exit,
+          layoutBuilder: (current, previous) => Stack(
+            fit: StackFit.expand,
+            children: [...previous, if (current != null) current],
+          ),
+          transitionBuilder: (child, anim) => FadeTransition(
+            opacity: anim,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.98, end: 1).animate(anim),
+              child: child,
+            ),
+          ),
+          child: KeyedSubtree(
+            key: ValueKey(_currentTab),
+            child: _buildTabBody(theme),
+          ),
+        ),
+      ),
       bottomNavigationBar: _buildBottomNav(theme),
     );
   }
@@ -249,51 +274,59 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
               final meta = _tabMeta[tab]!;
               final isActive = _currentTab == tab;
               return Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    if (_currentTab != tab) {
-                      HapticFeedback.selectionClick();
-                      setState(() => _currentTab = tab);
-                    }
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 4,
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? theme.primary.withValues(
-                              alpha: isDark ? 0.18 : 0.12,
-                            )
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          meta.icon,
-                          size: 22,
-                          color: isActive ? theme.primary : theme.textMuted,
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          meta.label,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: isActive
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                            color: isActive ? theme.primary : theme.textMuted,
-                            letterSpacing: 0.3,
+                child: PressScale(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (_currentTab != tab) {
+                        HapticFeedback.selectionClick();
+                        setState(() => _currentTab = tab);
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: Motion.base,
+                      curve: Motion.standard,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? theme.primary.withValues(
+                                alpha: isDark ? 0.18 : 0.12,
+                              )
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TweenAnimationBuilder<Color?>(
+                            tween: ColorTween(
+                              end: isActive ? theme.primary : theme.textMuted,
+                            ),
+                            duration: Motion.base,
+                            curve: Motion.standard,
+                            builder: (_, c, _) =>
+                                Icon(meta.icon, size: 22, color: c),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 3),
+                          AnimatedDefaultTextStyle(
+                            duration: Motion.base,
+                            curve: Motion.standard,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: isActive
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                              color: isActive ? theme.primary : theme.textMuted,
+                              letterSpacing: 0.3,
+                            ),
+                            child: Text(meta.label),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -310,6 +343,7 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
     final bottomPad = MediaQuery.of(ctx).padding.bottom;
 
     showModalBottomSheet(
+      sheetAnimationStyle: Motion.sheet,
       context: ctx,
       backgroundColor: theme.surfaceHigh,
       isScrollControlled: true,
