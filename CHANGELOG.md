@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Theme picker to use RadioGroup
 * Custom hex accent picker
 * Improved app icon (Made a proper gradient using digital tools instead of a hacky airbrush implementation of a gradient)
+* Material you into a toggle so it can be used alongside other themes
 
 ---
 
