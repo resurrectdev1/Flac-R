@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/audio_file.dart';
 import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/transitions.dart';
 import '../extra_tags_channel.dart';
 import 'shared_widgets.dart';
 import 'artwork_cache.dart';
@@ -164,7 +165,7 @@ class _EditSheetState extends State<EditSheet> {
 
   Future<bool> _confirmDiscard() async {
     if (!_isDirty) return true;
-    final result = await showDialog<bool>(
+    final result = await showFlacDialog<bool>(
       context: context,
       builder: (ctx) {
         final theme = widget.theme;
