@@ -17,6 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Dialogs scale in, and opening an album, artist or folder has a new fade and scale transition
 * Shared motion settings in `lib/theme/motion.dart` so all animations use the same timing and easing
 * Custom hex accent picker
+* Monochrome icon suppourt
 
 ### Changed
 
