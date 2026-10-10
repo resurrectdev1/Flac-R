@@ -69,7 +69,6 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                     const labels = {
                       FlacRThemeMode.darkSlate: 'Dark Slate',
                       FlacRThemeMode.amoledBlack: 'AMOLED Black',
-                      FlacRThemeMode.materialYou: 'Material You',
                       FlacRThemeMode.whiteMinimal: 'White Minimal',
                     };
                     return RadioListTile<FlacRThemeMode>(
@@ -89,6 +88,20 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                   }).toList(),
                 ),
               ),
+              if (liveSettings.hasDynamicColors || liveSettings.materialYou)
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Material You',
+                    style: TextStyle(color: theme.textPrimary),
+                  ),
+                  activeThumbColor: theme.primary,
+                  value: liveSettings.materialYou,
+                  onChanged: (val) {
+                    HapticFeedback.selectionClick();
+                    liveSettings.setMaterialYou(val);
+                  },
+                ),
               const SizedBox(height: 8),
               _AccentRow(settings: liveSettings),
               const SizedBox(height: 28),
@@ -324,7 +337,7 @@ class _AccentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = settings.theme;
-    final usesSystemColors = settings.themeMode == FlacRThemeMode.materialYou;
+    final usesSystemColors = settings.materialYou;
     final custom = settings.customAccent;
 
     final subtitle = usesSystemColors
