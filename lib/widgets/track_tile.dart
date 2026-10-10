@@ -5,10 +5,13 @@ import '../models/audio_file.dart';
 import '../models/audio_library.dart';
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/motion.dart';
 import 'edit_sheet.dart';
 import 'batch_edit_sheet.dart';
 import 'batch_banner.dart';
 import 'artwork_image.dart';
+import 'press_scale.dart';
+import 'reveal.dart';
 
 class DetailListPage extends StatefulWidget {
   const DetailListPage({super.key, required this.title, required this.files});
@@ -23,6 +26,7 @@ class DetailListPage extends StatefulWidget {
 class _DetailListPageState extends State<DetailListPage> {
   bool _selectMode = false;
   final Set<String> _selected = {};
+  final EntranceTracker _entrance = EntranceTracker();
 
   void _toggleSelect(String path) {
     setState(() {
@@ -51,6 +55,7 @@ class _DetailListPageState extends State<DetailListPage> {
         .toList();
     if (selectedFiles.isEmpty) return;
     showModalBottomSheet(
+      sheetAnimationStyle: Motion.sheet,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -74,6 +79,7 @@ class _DetailListPageState extends State<DetailListPage> {
     final liveFiles = library.files
         .where((f) => paths.contains(f.path))
         .toList();
+    _entrance.sync(liveFiles.take(24).map((f) => f.path));
 
     return Scaffold(
       backgroundColor: theme.bg,
@@ -137,12 +143,16 @@ class _DetailListPageState extends State<DetailListPage> {
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
               itemCount: liveFiles.length,
-              itemBuilder: (ctx, i) => TrackTile(
-                file: liveFiles[i],
-                theme: theme,
-                selectMode: _selectMode,
-                isSelected: _selected.contains(liveFiles[i].path),
-                onToggleSelect: _toggleSelect,
+              itemBuilder: (ctx, i) => StaggeredEntrance(
+                tracker: _entrance,
+                id: liveFiles[i].path,
+                child: TrackTile(
+                  file: liveFiles[i],
+                  theme: theme,
+                  selectMode: _selectMode,
+                  isSelected: _selected.contains(liveFiles[i].path),
+                  onToggleSelect: _toggleSelect,
+                ),
               ),
             ),
           ),
@@ -180,120 +190,127 @@ class TrackTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (selectMode) {
-          onToggleSelect?.call(file.path);
-        } else {
-          _showEditSheet(context);
-        }
-      },
-      onLongPress: () => onToggleSelect?.call(file.path),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.primary.withValues(alpha: 0.12)
-              : theme.cardBg,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
+    return PressScale(
+      child: GestureDetector(
+        onTap: () {
+          if (selectMode) {
+            onToggleSelect?.call(file.path);
+          } else {
+            _showEditSheet(context);
+          }
+        },
+        onLongPress: () => onToggleSelect?.call(file.path),
+        child: AnimatedContainer(
+          duration: Motion.fast,
+          curve: Motion.standard,
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
             color: isSelected
-                ? theme.primary
-                : theme.textMuted.withValues(alpha: 0.12),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            if (selectMode)
-              Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: isSelected ? theme.primary : Colors.transparent,
-                    border: Border.all(
-                      color: isSelected ? theme.primary : theme.textMuted,
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: isSelected
-                      ? const Icon(
-                          Icons.check_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        )
-                      : null,
-                ),
-              ),
-            ArtworkImage(
-              path: file.path,
-              hasArtwork: file.hasArtwork,
-              size: 44,
-              borderRadius: 10,
-              placeholderColor: theme.primary.withValues(alpha: 0.12),
-              placeholderChild: Center(
-                child: Text(
-                  _ext,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: theme.primary,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
+                ? theme.primary.withValues(alpha: 0.12)
+                : theme.cardBg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected
+                  ? theme.primary
+                  : theme.textMuted.withValues(alpha: 0.12),
+              width: isSelected ? 1.5 : 1,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    file.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+          ),
+          child: Row(
+            children: [
+              if (selectMode)
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: AnimatedContainer(
+                    duration: Motion.fast,
+                    curve: Motion.standard,
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: isSelected ? theme.primary : Colors.transparent,
+                      border: Border.all(
+                        color: isSelected ? theme.primary : theme.textMuted,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check_rounded,
+                            size: 14,
+                            color: Colors.white,
+                          )
+                        : null,
+                  ),
+                ),
+              ArtworkImage(
+                path: file.path,
+                hasArtwork: file.hasArtwork,
+                size: 44,
+                borderRadius: 10,
+                placeholderColor: theme.primary.withValues(alpha: 0.12),
+                placeholderChild: Center(
+                  child: Text(
+                    _ext,
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: theme.textPrimary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: theme.primary,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${file.artist} — ${file.album}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 11, color: theme.textSecondary),
-                  ),
-                  if (file.year != null ||
-                      file.trackNumber != null ||
-                      file.genre != null) ...[
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      file.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.textPrimary,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
-                      [
-                        if (file.trackNumber != null) '#${file.trackNumber}',
-                        if (file.year != null) '${file.year}',
-                        if (file.genre != null) file.genre!,
-                      ].join(' · '),
-                      style: TextStyle(fontSize: 10, color: theme.textMuted),
+                      '${file.artist} — ${file.album}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: theme.textSecondary,
+                      ),
                     ),
+                    if (file.year != null ||
+                        file.trackNumber != null ||
+                        file.genre != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        [
+                          if (file.trackNumber != null) '#${file.trackNumber}',
+                          if (file.year != null) '${file.year}',
+                          if (file.genre != null) file.genre!,
+                        ].join(' · '),
+                        style: TextStyle(fontSize: 10, color: theme.textMuted),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            if (!selectMode)
-              Icon(
-                Icons.chevron_right_rounded,
-                color: theme.textMuted,
-                size: 20,
-              ),
-          ],
+              if (!selectMode)
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: theme.textMuted,
+                  size: 20,
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -301,6 +318,7 @@ class TrackTile extends StatelessWidget {
 
   void _showEditSheet(BuildContext ctx) {
     showModalBottomSheet(
+      sheetAnimationStyle: Motion.sheet,
       context: ctx,
       isScrollControlled: true,
       useSafeArea: true,
