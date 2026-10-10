@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/motion.dart';
 import 'shared_widgets.dart';
 
 String colorToHex(Color color) => color
@@ -128,7 +129,8 @@ class _AccentPickerSheetState extends State<AccentPickerSheet> {
                 return GestureDetector(
                   onTap: () => _selectPreset(c),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: Motion.base,
+                    curve: Motion.standard,
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
@@ -202,7 +204,8 @@ class _AccentPickerSheetState extends State<AccentPickerSheet> {
                 ),
                 const SizedBox(width: 12),
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: Motion.base,
+                  curve: Motion.standard,
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
@@ -273,6 +276,7 @@ class _AccentPickerSheetState extends State<AccentPickerSheet> {
 Future<void> showAccentPickerSheet(BuildContext context) {
   final theme = context.read<FlacRSettings>().theme;
   return showModalBottomSheet(
+    sheetAnimationStyle: Motion.sheet,
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
