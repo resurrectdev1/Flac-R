@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../models/audio_library.dart';
 import '../theme/flacr_theme.dart';
+import '../theme/transitions.dart';
 import '../utils/sort_utils.dart';
 import '../widgets/scan_progress_view.dart';
+import '../widgets/reveal.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/track_tile.dart';
 
@@ -18,6 +20,7 @@ class FolderView extends StatefulWidget {
 
 class FolderViewState extends State<FolderView> {
   SortOrder _order = SortOrder.asc;
+  final EntranceTracker _entrance = EntranceTracker();
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +47,7 @@ class FolderViewState extends State<FolderView> {
             ? a.toLowerCase().compareTo(b.toLowerCase())
             : b.toLowerCase().compareTo(a.toLowerCase()),
       );
+    _entrance.sync(keys.take(24));
 
     return Column(
       children: [
@@ -76,21 +80,26 @@ class FolderViewState extends State<FolderView> {
               final dir = keys[i];
               final tracks = folders[dir]!;
               final label = dir.split('/').last;
-              return GroupTile(
-                theme: theme,
-                artworkPath: null,
-                icon: Icons.folder_rounded,
-                title: label,
-                subtitle: dir.length > 48
-                    ? '…${dir.substring(dir.length - 46)}'
-                    : dir,
-                trailing:
-                    '${tracks.length} file${tracks.length == 1 ? '' : 's'}',
-                tracks: tracks,
-                onTap: () => Navigator.push(
-                  ctx,
-                  MaterialPageRoute(
-                    builder: (_) => DetailListPage(title: label, files: tracks),
+              return StaggeredEntrance(
+                tracker: _entrance,
+                id: dir,
+                child: GroupTile(
+                  theme: theme,
+                  artworkPath: null,
+                  icon: Icons.folder_rounded,
+                  title: label,
+                  subtitle: dir.length > 48
+                      ? '…${dir.substring(dir.length - 46)}'
+                      : dir,
+                  trailing:
+                      '${tracks.length} file${tracks.length == 1 ? '' : 's'}',
+                  tracks: tracks,
+                  onTap: () => Navigator.push(
+                    ctx,
+                    FlacRoute<void>(
+                      builder: (_) =>
+                          DetailListPage(title: label, files: tracks),
+                    ),
                   ),
                 ),
               );
