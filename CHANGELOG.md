@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > Changes staged for the next release go here. Move them down when you cut a tag.
 
+---
+
+## [0.6.0] - 2026-10-11
+
 ### Added
 
 * Animations across the app, e.g. tracks, albums, artists and folders fade in one after another, tabs cross-fade when you switch, and tiles, the sort toggle and the bottom nav give subtle press feedback
