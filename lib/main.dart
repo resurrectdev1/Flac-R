@@ -82,7 +82,7 @@ class FlacRApp extends StatelessWidget {
           primary: gt.primary,
           error: FlacRTheme.errorRed,
           onSurface: gt.textPrimary,
-          onPrimary: Colors.white,
+          onPrimary: gt.onAccent,
         );
     return ThemeData(
       useMaterial3: true,
