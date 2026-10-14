@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > Changes staged for the next release go here. Move them down when you cut a tag.
 
+### Changed
+
+* Material You now only changes the accent color (taken from your wallpaper) instead of replacing the whole theme, so Dark Slate, AMOLED Black and White Minimal keep their own surfaces and folder colors
+
 ---
 
 ## [0.6.0] - 2026-10-11
