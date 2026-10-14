@@ -22,10 +22,7 @@ class FlacRTheme {
     return brightness == Brightness.light ? dynamicLight : dynamicDark;
   }
 
-  bool get _dynSurfaces => _dyn != null && mode != FlacRThemeMode.amoledBlack;
-
   Color get bg {
-    if (_dynSurfaces) return _dyn!.surface;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF0D0F14);
@@ -37,7 +34,6 @@ class FlacRTheme {
   }
 
   Color get surface {
-    if (_dynSurfaces) return _dyn!.surfaceContainerLow;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF13161E);
@@ -49,7 +45,6 @@ class FlacRTheme {
   }
 
   Color get surfaceHigh {
-    if (_dynSurfaces) return _dyn!.surfaceContainerHigh;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF1C2030);
@@ -61,7 +56,6 @@ class FlacRTheme {
   }
 
   Color get cardBg {
-    if (_dynSurfaces) return _dyn!.surfaceContainer;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF161929);
@@ -90,7 +84,6 @@ class FlacRTheme {
   }
 
   Color get textPrimary {
-    if (_dynSurfaces) return _dyn!.onSurface;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFFE8E8F0);
@@ -102,7 +95,6 @@ class FlacRTheme {
   }
 
   Color get textSecondary {
-    if (_dynSurfaces) return _dyn!.onSurfaceVariant;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF8888AA);
@@ -114,7 +106,6 @@ class FlacRTheme {
   }
 
   Color get textMuted {
-    if (_dynSurfaces) return _dyn!.outline;
     switch (mode) {
       case FlacRThemeMode.darkSlate:
         return const Color(0xFF444466);
@@ -124,6 +115,10 @@ class FlacRTheme {
         return const Color(0xFF999999);
     }
   }
+
+  Color get onAccent => primary.computeLuminance() > 0.55
+      ? const Color(0xFF1B1B1F)
+      : Colors.white;
 
   Brightness get brightness {
     switch (mode) {
