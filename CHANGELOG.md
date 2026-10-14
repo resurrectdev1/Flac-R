@@ -12,7 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-* Material You now only changes the accent color (taken from your wallpaper) instead of replacing the whole theme, so Dark Slate, AMOLED Black and White Minimal keep their own surfaces and folder colors
+* Material You now only changes the accent color (taken from your wallpaper) instead of replacing the whole theme, so Dark Slate, AMOLED Black and White Minimal keep their own surfaces
 
 ---
 
