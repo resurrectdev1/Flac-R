@@ -7,6 +7,7 @@ import '../models/audio_library.dart';
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
 import '../theme/motion.dart';
+import '../theme/transitions.dart';
 import '../utils/format_utils.dart';
 import 'accent_picker_sheet.dart';
 import 'artwork_cache.dart';
@@ -51,7 +52,7 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
               ),
               const SizedBox(height: 20),
               Text(
-                'THEME',
+                'APPEARANCE',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -113,7 +114,7 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
               _AccentRow(settings: liveSettings),
               const SizedBox(height: 28),
               Text(
-                'SCAN FOLDERS',
+                'LIBRARY',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -295,16 +296,6 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
-              _CacheRow(
-                theme: theme,
-                sizeBytes: ArtworkCache.instance.sizeBytes,
-                onClear: () {
-                  HapticFeedback.selectionClick();
-                  ArtworkCache.instance.clear();
-                  setState(() {});
-                },
-              ),
               const SizedBox(height: 8),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -325,7 +316,7 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                   liveSettings.setAutoRescan(val);
                 },
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.primary,
@@ -346,12 +337,90 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                   library.scan(roots: liveSettings.scanRoots.toList());
                 },
               ),
+              const SizedBox(height: 28),
+              _SectionHeader(theme: theme, text: 'EDITING'),
+              const SizedBox(height: 6),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  'Rename file with title',
+                  style: TextStyle(color: theme.textPrimary),
+                ),
+                subtitle: Text(
+                  liveSettings.renameFileOnTitleChange
+                      ? 'Saving a new song title also renames the audio file'
+                      : 'Off. The file name stays the same when you change a title',
+                  style: TextStyle(color: theme.textMuted),
+                ),
+                activeThumbColor: theme.primary,
+                value: liveSettings.renameFileOnTitleChange,
+                onChanged: (val) async {
+                  HapticFeedback.selectionClick();
+                  if (!val) {
+                    liveSettings.setRenameFileOnTitleChange(false);
+                    return;
+                  }
+                  final confirmed = await _confirmRenameWarning(context, theme);
+                  if (confirmed) liveSettings.setRenameFileOnTitleChange(true);
+                },
+              ),
+              const SizedBox(height: 22),
+              _SectionHeader(theme: theme, text: 'STORAGE'),
+              const SizedBox(height: 10),
+              _CacheRow(
+                theme: theme,
+                sizeBytes: ArtworkCache.instance.sizeBytes,
+                onClear: () {
+                  HapticFeedback.selectionClick();
+                  ArtworkCache.instance.clear();
+                  setState(() {});
+                },
+              ),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+Future<bool> _confirmRenameWarning(
+  BuildContext context,
+  FlacRTheme theme,
+) async {
+  final result = await showFlacDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: theme.surfaceHigh,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(24)),
+      ),
+      title: Text(
+        'Rename files?',
+        style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.w700),
+      ),
+      content: Text(
+        'When you save a new song title, the file itself will be renamed to '
+        'match it. Playlists or other apps that point to the old file name '
+        'may no longer find the song.',
+        style: TextStyle(color: theme.textSecondary),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text('Cancel', style: TextStyle(color: theme.textSecondary)),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(
+            'Turn on',
+            style: TextStyle(color: theme.primary, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
 }
 
 Future<void> showFlacRSettingsSheet(BuildContext context) {
@@ -366,6 +435,25 @@ Future<void> showFlacRSettingsSheet(BuildContext context) {
     ),
     builder: (_) => const FlacRSettingsSheet(),
   );
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.theme, required this.text});
+  final FlacRTheme theme;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: theme.textMuted,
+        letterSpacing: 1.0,
+      ),
+    );
+  }
 }
 
 class _AccentRow extends StatelessWidget {
