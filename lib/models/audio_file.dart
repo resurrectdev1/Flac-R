@@ -66,4 +66,36 @@ class AudioFile {
       comment: clearComment ? null : (comment ?? this.comment),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'path': path,
+    'title': title,
+    'artist': artist,
+    'album': album,
+    'genre': genre,
+    'year': year,
+    'trackNumber': trackNumber,
+    'albumArtist': albumArtist,
+    'lyrics': lyrics,
+    'discNumber': discNumber,
+    'composer': composer,
+    'comment': comment,
+    'hasArtwork': hasArtwork,
+  };
+
+  factory AudioFile.fromJson(Map<String, dynamic> json) => AudioFile(
+    path: json['path'] as String,
+    title: json['title'] as String,
+    artist: json['artist'] as String,
+    album: json['album'] as String,
+    genre: json['genre'] as String?,
+    year: json['year'] as String?,
+    trackNumber: json['trackNumber'] as int?,
+    albumArtist: json['albumArtist'] as String?,
+    lyrics: json['lyrics'] as String?,
+    discNumber: json['discNumber'] as int?,
+    composer: json['composer'] as String?,
+    comment: json['comment'] as String?,
+    hasArtwork: json['hasArtwork'] as bool? ?? false,
+  );
 }
