@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:audiotags/audiotags.dart';
+import 'package:path_provider/path_provider.dart';
 import 'audio_file.dart';
 import '../extra_tags_channel.dart';
 import '../widgets/artwork_cache.dart';
@@ -113,6 +115,7 @@ class AudioLibrary extends ChangeNotifier {
       notifyListeners();
 
       await _loadExtraTags();
+      unawaited(_saveSnapshot());
     } catch (e) {
       _error = e.toString();
       _progress = null;
@@ -163,6 +166,75 @@ class AudioLibrary extends ChangeNotifier {
     _files = List.of(_files)..[idx] = updated;
     _invalidateCaches();
     notifyListeners();
+    _scheduleSnapshotSave();
+  }
+
+  Timer? _snapshotTimer;
+
+  @override
+  void dispose() {
+    _snapshotTimer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleSnapshotSave() {
+    _snapshotTimer?.cancel();
+    _snapshotTimer = Timer(const Duration(seconds: 2), _saveSnapshot);
+  }
+
+  Future<String> _snapshotPath() async {
+    final dir = await getApplicationCacheDirectory();
+    return '${dir.path}/library_snapshot.json';
+  }
+
+  Future<bool> loadSnapshot() async {
+    if (_scanning) return false;
+    try {
+      final loaded = await compute(_readSnapshot, await _snapshotPath());
+      if (loaded == null) return false;
+      _files = loaded;
+      _skippedCount = 0;
+      _invalidateCaches();
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('AudioLibrary: snapshot load failed: $e');
+      return false;
+    }
+  }
+
+  Future<void> _saveSnapshot() async {
+    try {
+      final path = await _snapshotPath();
+      final payload = _files.map((f) => f.toJson()).toList();
+      await compute(_writeSnapshot, (path: path, files: payload));
+    } catch (e) {
+      debugPrint('AudioLibrary: snapshot save failed: $e');
+    }
+  }
+
+  static const _snapshotVersion = 1;
+
+  static List<AudioFile>? _readSnapshot(String path) {
+    final file = File(path);
+    if (!file.existsSync()) return null;
+    final data = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+    if (data['v'] != _snapshotVersion) return null;
+    final files = (data['files'] as List)
+        .map((e) => AudioFile.fromJson(e as Map<String, dynamic>))
+        .where((f) => File(f.path).existsSync())
+        .toList();
+    return files;
+  }
+
+  static void _writeSnapshot(
+    ({String path, List<Map<String, dynamic>> files}) a,
+  ) {
+    final tmp = File('${a.path}.tmp');
+    tmp.writeAsStringSync(
+      jsonEncode({'v': _snapshotVersion, 'files': a.files}),
+    );
+    tmp.renameSync(a.path);
   }
 
   void _invalidateCaches() {
