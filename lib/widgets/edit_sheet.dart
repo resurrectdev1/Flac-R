@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/audio_file.dart';
 import '../models/audio_library.dart';
+import '../providers/flacr_settings.dart';
+import '../utils/file_rename.dart';
 import '../theme/flacr_theme.dart';
 import '../theme/transitions.dart';
 import '../extra_tags_channel.dart';
@@ -215,6 +217,7 @@ class _EditSheetState extends State<EditSheet> {
     final f = widget.file;
     final theme = widget.theme;
     final library = context.read<AudioLibrary>();
+    final settings = context.read<FlacRSettings>();
 
     final trackRaw = _trackCtrl.text.trim();
     final discRaw = _discCtrl.text.trim();
@@ -312,10 +315,35 @@ class _EditSheetState extends State<EditSheet> {
           comment: commentVal,
         );
       }
-      await ExtraTags.scanFile(f.path);
+
+      var finalPath = f.path;
+      var snackText = 'Tags saved';
+      var snackIsWarning = false;
+      final newTitle = _titleCtrl.text.trim();
+      if (settings.renameFileOnTitleChange && newTitle != f.title) {
+        final r = await FileRenamer.renameToTitle(f.path, newTitle);
+        switch (r.outcome) {
+          case RenameOutcome.renamed:
+            finalPath = r.path;
+            snackText = 'Tags saved and file renamed';
+          case RenameOutcome.targetExists:
+            snackText =
+                'Tags saved, but the file wasn\'t renamed because a file with that name already exists';
+            snackIsWarning = true;
+          case RenameOutcome.invalidName:
+          case RenameOutcome.failed:
+            snackText = 'Tags saved, but the file couldn\'t be renamed';
+            snackIsWarning = true;
+          case RenameOutcome.unchanged:
+            break;
+        }
+      }
+      final renamed = finalPath != f.path;
+      await ExtraTags.scanFiles(renamed ? [f.path, finalPath] : [f.path]);
       final composerChanged = composerVal != (f.composer ?? '');
       final commentChanged = commentVal != (f.comment ?? '');
       final updated = f.copyWith(
+        path: finalPath,
         title: _titleCtrl.text.trim(),
         artist: _artistCtrl.text.trim(),
         album: _albumCtrl.text.trim(),
@@ -334,15 +362,17 @@ class _EditSheetState extends State<EditSheet> {
         comment: commentChanged && commentVal.isNotEmpty ? commentVal : null,
         clearComment: commentChanged && commentVal.isEmpty,
       );
-      if (_artworkChanged) ArtworkCache.instance.invalidate(f.path);
-      library.updateFile(updated);
+      if (_artworkChanged || renamed) ArtworkCache.instance.invalidate(f.path);
+      library.updateFile(updated, oldPath: f.path);
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Tags saved'),
-            backgroundColor: theme.primary,
+            content: Text(snackText),
+            backgroundColor: snackIsWarning
+                ? FlacRTheme.errorRed
+                : theme.primary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
