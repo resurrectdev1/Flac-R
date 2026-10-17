@@ -31,6 +31,7 @@ class AudioFile {
   });
 
   AudioFile copyWith({
+    String? path,
     String? title,
     String? artist,
     String? album,
@@ -51,7 +52,7 @@ class AudioFile {
     bool clearComment = false,
   }) {
     return AudioFile(
-      path: path,
+      path: path ?? this.path,
       title: title ?? this.title,
       artist: artist ?? this.artist,
       album: album ?? this.album,
