@@ -50,6 +50,7 @@ class _FlacRHomeScreenState extends State<FlacRHomeScreen> {
       }
 
       if (settings.scanRoots.isEmpty) return;
+      if (!settings.autoRescan && await library.loadSnapshot()) return;
       await library.scan(roots: settings.scanRoots.toList());
       if (mounted && library.skippedCount > 0) {
         final n = library.skippedCount;
