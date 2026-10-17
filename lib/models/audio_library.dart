@@ -160,8 +160,8 @@ class AudioLibrary extends ChangeNotifier {
     }
   }
 
-  void updateFile(AudioFile updated) {
-    final idx = _files.indexWhere((f) => f.path == updated.path);
+  void updateFile(AudioFile updated, {String? oldPath}) {
+    final idx = _files.indexWhere((f) => f.path == (oldPath ?? updated.path));
     if (idx == -1) return;
     _files = List.of(_files)..[idx] = updated;
     _invalidateCaches();
