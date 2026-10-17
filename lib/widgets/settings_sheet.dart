@@ -7,7 +7,9 @@ import '../models/audio_library.dart';
 import '../providers/flacr_settings.dart';
 import '../theme/flacr_theme.dart';
 import '../theme/motion.dart';
+import '../utils/format_utils.dart';
 import 'accent_picker_sheet.dart';
+import 'artwork_cache.dart';
 import 'shared_widgets.dart';
 
 class FlacRSettingsSheet extends StatefulWidget {
@@ -294,6 +296,36 @@ class _FlacRSettingsSheetState extends State<FlacRSettingsSheet> {
                 ),
               ],
               const SizedBox(height: 12),
+              _CacheRow(
+                theme: theme,
+                sizeBytes: ArtworkCache.instance.sizeBytes,
+                onClear: () {
+                  HapticFeedback.selectionClick();
+                  ArtworkCache.instance.clear();
+                  setState(() {});
+                },
+              ),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  'Rescan on launch',
+                  style: TextStyle(color: theme.textPrimary),
+                ),
+                subtitle: Text(
+                  liveSettings.autoRescan
+                      ? 'Scan folders every time the app opens'
+                      : 'Open instantly with your last scan. Use Rescan Library to refresh',
+                  style: TextStyle(color: theme.textMuted),
+                ),
+                activeThumbColor: theme.primary,
+                value: liveSettings.autoRescan,
+                onChanged: (val) {
+                  HapticFeedback.selectionClick();
+                  liveSettings.setAutoRescan(val);
+                },
+              ),
+              const SizedBox(height: 4),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.primary,
@@ -409,6 +441,66 @@ class _AccentRow extends StatelessWidget {
                 Icons.chevron_right_rounded,
                 color: theme.textMuted,
                 size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CacheRow extends StatelessWidget {
+  const _CacheRow({
+    required this.theme,
+    required this.sizeBytes,
+    required this.onClear,
+  });
+
+  final FlacRTheme theme;
+  final int sizeBytes;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final isEmpty = sizeBytes == 0;
+
+    return Opacity(
+      opacity: isEmpty ? 0.5 : 1,
+      child: GestureDetector(
+        onTap: isEmpty ? null : onClear,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            color: theme.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: theme.textMuted.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.cleaning_services_rounded,
+                color: theme.primary.withValues(alpha: 0.8),
+                size: 22,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Clear cache',
+                      style: TextStyle(fontSize: 14, color: theme.textPrimary),
+                    ),
+                    Text(
+                      isEmpty
+                          ? 'Artwork cache is empty'
+                          : 'Artwork • ${formatBytes(sizeBytes)} in memory',
+                      style: TextStyle(fontSize: 11, color: theme.textMuted),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
