@@ -14,6 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * "Rescan on launch" toggle in settings. When off, Flac-R opens instantly with the library from your last scan (use Rescan Library to refresh)
 * "Clear cache" in settings, showing how much album art is cached in memory and letting you delete it
+* "Rename file with title" toggle in settings (off by default, with a warning when turned on). When on, saving a new song title also renames the audio file to match
 
 ### Changed
 
