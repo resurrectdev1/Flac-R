@@ -10,6 +10,16 @@ class ArtworkCache {
   final _cache = <String, Uint8List?>{};
   final _accessLog = <String>[];
 
+  int get entryCount => _cache.length;
+
+  int get sizeBytes {
+    var total = 0;
+    for (final bytes in _cache.values) {
+      total += bytes?.lengthInBytes ?? 0;
+    }
+    return total;
+  }
+
   Future<Uint8List?> get(String path) async {
     if (_cache.containsKey(path)) {
       _touch(path);
