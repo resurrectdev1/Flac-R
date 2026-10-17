@@ -10,6 +10,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > Changes staged for the next release go here. Move them down when you cut a tag.
 
+### Added
+
+* "Rescan on launch" toggle in settings. When off, Flac-R opens instantly with the library from your last scan (use Rescan Library to refresh)
+* "Clear cache" in settings, showing how much album art is cached in memory and letting you delete it
+
 ### Changed
 
 * Material You now only changes the accent color (taken from your wallpaper) instead of replacing the whole theme, so Dark Slate, AMOLED Black and White Minimal keep their own surfaces
