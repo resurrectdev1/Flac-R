@@ -11,11 +11,13 @@ class FlacRSettings extends ChangeNotifier {
   bool _onboardingDone = false;
   List<String> _scanRoots = [];
   Color? _customAccent;
+  bool _autoRescan = true;
 
   FlacRThemeMode get themeMode => _themeMode;
   bool get materialYou => _materialYou;
   bool get hasDynamicColors => _dynamicLight != null || _dynamicDark != null;
   bool get onboardingDone => _onboardingDone;
+  bool get autoRescan => _autoRescan;
   Color? get customAccent => _customAccent;
   FlacRTheme get theme => FlacRTheme(
     mode: _themeMode,
@@ -49,6 +51,7 @@ class FlacRSettings extends ChangeNotifier {
     }
     _onboardingDone = prefs.getBool('flacr_onboarding_done') ?? false;
     _scanRoots = prefs.getStringList('flacr_scan_roots') ?? [];
+    _autoRescan = prefs.getBool('flacr_auto_rescan') ?? true;
     final accentInt = prefs.getInt('flacr_custom_accent');
     if (accentInt != null) _customAccent = Color(accentInt);
     _dynamicLight = dynamicLight;
@@ -113,6 +116,13 @@ class FlacRSettings extends ChangeNotifier {
     } else {
       await prefs.setInt('flacr_custom_accent', color.toARGB32());
     }
+    notifyListeners();
+  }
+
+  Future<void> setAutoRescan(bool value) async {
+    _autoRescan = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('flacr_auto_rescan', value);
     notifyListeners();
   }
 
