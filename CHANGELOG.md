@@ -12,14 +12,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* "Rescan on launch" toggle in settings. When off, Flac-R opens instantly with the library from your last scan (use Rescan Library to refresh)
-* "Clear cache" in settings, showing how much album art is cached in memory and letting you delete it
-* "Rename file with title" toggle in settings (off by default, with a warning when turned on). When on, saving a new song title also renames the audio file to match
+* "Rescan on launch" toggle in settings. When off, Flac-R opens instantly with the library from your last scan. (use Rescan Library to refresh)
+* "Clear cache" in settings, showing how much album art is cached in memory and letting you delete it.
+* "Rename file with title" toggle in settings (off by default, with a warning when turned on). When on, saving a new song title also renames the audio file to match.
 
 ### Changed
 
-* Material You now only changes the accent color (taken from your wallpaper) instead of replacing the whole theme, so Dark Slate, AMOLED Black and White Minimal keep their own surfaces
-* Banner to use new app_icon
+* Material You now only changes the accent color (taken from your wallpaper) instead of replacing the whole theme, so Dark Slate, AMOLED Black and White Minimal keep their own surfaces.
+* Banner to use new app_icon.
 
 ---
 
